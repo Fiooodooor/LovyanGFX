@@ -5,6 +5,7 @@
 
 static LGFX lcd;
 static LGFX_Sprite sprite[10];
+static LGFX_Sprite canvas(&lcd);
 
 static std::uint32_t count = 0;
 static float zoom = 0;
@@ -23,6 +24,7 @@ extern const unsigned char parrot09[];
 void setup()
 {
   lcd.init();
+  lcd.initDMA();
   lcd.setRotation(0);
   if (lcd.width() < lcd.height()) { lcd.setRotation(lcd.getRotation() ^ 1); }
 
@@ -32,6 +34,10 @@ void setup()
 
   lcd.setPivot(lcd.width() >> 1, lcd.height() >> 1);
   lcd.fillScreen(0xFFFFFFU);
+
+  canvas.setColorDepth(lcd.getColorDepth());
+  canvas.createSprite(lcd.width(), lcd.height());
+  canvas.setPivot(canvas.width() >> 1, canvas.height() >> 1);
 
   sprite[0].createFromBmp(parrot00);
   sprite[1].createFromBmp(parrot01);
@@ -43,10 +49,14 @@ void setup()
   sprite[7].createFromBmp(parrot07);
   sprite[8].createFromBmp(parrot08);
   sprite[9].createFromBmp(parrot09);
+
+  lcd.startWrite();
 }
 
 void loop() {
   if (++count == 10) count = 0;
-  sprite[count].pushRotateZoom(&lcd, lcd.width() >> 1, lcd.height() >> 1, 0, zoom, zoom);
+  canvas.fillSprite(0xFFFFFFU);
+  sprite[count].pushRotateZoom(&canvas, canvas.width() >> 1, canvas.height() >> 1, 0, zoom, zoom);
+  canvas.pushSprite(0, 0);
 }
 
