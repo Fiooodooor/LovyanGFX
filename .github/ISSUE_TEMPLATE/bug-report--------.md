@@ -1,5 +1,5 @@
 ---
-name: Bug report (不具合報告)
+name: Bug report
 about: Create a report to help us improve
 title: ''
 labels: ''
@@ -8,9 +8,8 @@ assignees: ''
 ---
 
 **Carefully written Issues are more likely to be given priority.**
-**丁寧に記述された報告は優先して対応される可能性が高くなります。**
 
-## Environment ( 実行環境 )
+## Environment
 
 - MCU or Board name:  [ESP-WROOM-32|ESP32-S3-BOX|M5Stack|WioTerminal|RPi2040|other]
 - Panel Driver IC:    [ILI9341|SSD1963|ST7796|other]
@@ -20,13 +19,13 @@ assignees: ''
 - Build Environment:   [ArduinoIDE|PlatformIO|Eclipse|other]
 - Operating System:   [Windows|Linux|macOS]
 
-## Problem Description ( 問題の内容 )
+## Problem Description
 
-### Expected Behavior ( 期待される動作 )
+### Expected Behavior
 
-### Actual Behavior ( 実際の動作 )
+### Actual Behavior
 
-### Steps to reproduce ( 再現のための前提条件 )
+### Steps to reproduce
 
 1. step1
 2. ...
@@ -34,10 +33,9 @@ assignees: ''
 // If possible, attach a picture of your setup/wiring here.
 
 
-### Code to reproduce this issue ( 再現させるためのコード )
+### Code to reproduce this issue
 
 **Please submit complete source code that can reproduce your problem.**
-**あなたの問題を再現できる完全なソースコードを提示してください。**
 
 ```cpp
 // the code should be wrapped in the ```cpp tag so that it will be displayed better.

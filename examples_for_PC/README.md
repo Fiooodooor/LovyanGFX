@@ -1,70 +1,70 @@
 
 # How to build LovyanGFX for Windows.
 
-### VisualStudio で clang を使用できるようにする
+### Enable clang in VisualStudio
 
- - [VisualStudioのサイト](https://visualstudio.microsoft.com/ja/vs/)から `VisualStudio Community 2022` をダウンロード 
- - VisualStudio をインストールする際に以下のオプションを追加する
- - ` C++ によるデスクトップ開発 ` にチェックを入れる
- - 右ペインの ` インストールの詳細 ` から ` Windows用 C++ Clang ツール ` にチェックを入れる <br>
+ - Download `VisualStudio Community 2022` from the [VisualStudio website](https://visualstudio.microsoft.com/ja/vs/)
+ - Add the following options when installing VisualStudio
+ - Check ` Desktop development with C++ `
+ - In the right pane, under ` Installation details `, check ` C++ Clang tools for Windows ` <br>
 
 ![VisualStudio_Installer](./images/vs_install.png)
 
 ---
 
-### SDL または OpenCV を入手し任意のフォルダに配置する
- - SDLの場合 [こちらのダウンロードページ](https://www.libsdl.org/download-2.0.php) から `Development Libraries` を入手 <br>
+### Obtain SDL or OpenCV and place them in a folder of your choice
+ - For SDL, obtain `Development Libraries` from [this download page](https://www.libsdl.org/download-2.0.php) <br>
     ![sdl2_download_page](./images/sdl2_download_page.png)
- - OpenCVの場合 [こちらのダウンロードページ](https://opencv.org/releases/) から `Releases` の `Windows` を入手 <br>
+ - For OpenCV, obtain `Windows` from `Releases` on [this download page](https://opencv.org/releases/) <br>
     ![opencv_download_page](./images/opencv_download_page.png)
- - OpenCVの場合、インストーラを起動して任意の場所に展開。例ではC直下に作成 (C:\opencvに作成される) <br>
+ - For OpenCV, run the installer and extract to a location of your choice. In this example, it is extracted directly under C:\ (created at C:\opencv) <br>
     ![opencv_install_directory](./images/opencv_install_directory.png)
- - サンプルのCMakeListsは `C:\SDL2` や `C:\opencv` に配置した場合のパスを初期設定値としている
+ - The sample CMakeLists uses the paths for `C:\SDL2` and `C:\opencv` as default values
 
 ---
 
-### 環境変数の編集を行い、パスを追加する
- - 環境変数 > ユーザー環境変数  > `Path` を選択 > 編集 > 新規
- - SDL2の場合、`C:/SDL2/lib/x64/` を追加 ( 配置した場所に合わせて調整すること )
- - OpenCVの場合、`C:/opencv/build/x64/vc15\bin` を追加 ( 配置した場所に合わせて調整すること )
- - ※ パスの場所にDLLファイルが含まれていることを確認すること
- - ※ パスを追加したあと、PCを再起動(または再ログオン)すること <br>
+### Edit environment variables and add paths
+ - Environment Variables > User Variables > Select `Path` > Edit > New
+ - For SDL2, add `C:/SDL2/lib/x64/` (adjust according to where you placed it)
+ - For OpenCV, add `C:/opencv/build/x64/vc15\bin` (adjust according to where you placed it)
+ - * Make sure the path location contains DLL files
+ - * After adding the path, restart your PC (or log off and log back on) <br>
 ![env_path](./images/env_path.png)
 
 ---
 
-### サンプルフォルダ内のCMakeLists.txtを調整する
- - CMakeLists.txt を開き、環境に合わせてパスやファイル名の記述を調整する
- - SDL2 の場合 `examples_for_PC/CMake_SDL/CMakeLists.txt`
- - OpenCV の場合 `examples_for_PC/CMake_OpenCV/CMakeLists.txt`
- - OpenCV の場合は`.lib`ファイル名にバージョン番号が含まれているので、これも入手したバージョンと一致するよう調整する <br>
+### Adjust the CMakeLists.txt in the sample folder
+ - Open CMakeLists.txt and adjust the paths and filenames to match your environment
+ - For SDL2: `examples_for_PC/CMake_SDL/CMakeLists.txt`
+ - For OpenCV: `examples_for_PC/CMake_OpenCV/CMakeLists.txt`
+ - For OpenCV, the `.lib` filename includes a version number, so adjust it to match the version you obtained <br>
 ![cmakelists_edit](./images/cmakelists_edit.png)
 
 ---
 
-### VisualStudioを起動し、サンプルフォルダを開く
- - VisualStudioを起動して `ローカル フォルダーを開く` をクリックし、サンプルフォルダを選択する
- - SDL2 の場合 examples_for_PC/CMake_SDL 
- - OpenCV の場合 examples_for_PC/CMake_OpenCV <br>
+### Launch VisualStudio and open the sample folder
+ - Launch VisualStudio, click `Open a local folder`, and select the sample folder
+ - For SDL2: examples_for_PC/CMake_SDL 
+ - For OpenCV: examples_for_PC/CMake_OpenCV <br>
 ![vs_open](./images/vs_open.png)
 
 
- - 画面上部にあるビルドターゲットの設定枠で `LGFX_SDL` または `LGFX_OpenCV` を選択する
- - `デバッグ` > `デバッグの開始` をクリックする <br>
+ - In the build target selection box at the top of the screen, select `LGFX_SDL` or `LGFX_OpenCV`
+ - Click `Debug` > `Start Debugging` <br>
 ![vs_build](./images/vs_build.png)
 ![vs_debug](./images/vs_debug.png)
 
- - デバッグ中の様子(サンプルコード) <br>
+ - Debugging in progress (sample code) <br>
 ![vs_debugging_example](./images/vs_debugging_example.png)
 
- - デバッグの停止<br>
+ - Stop Debugging<br>
 ![vs_debug_stop](./images/vs_debug_stop.png)
 
- - ビルド時に以下のようなエラーが出る場合や、実行時にDLLが見つからないエラーが出る場合は、環境設定のパスやCMakeLists.txtのパスおよびファイル名を見直す。環境設定後は再起動(または再ログオン)を忘れずに。
+ - If you encounter build errors like the one below, or DLL-not-found errors at runtime, review the paths in your environment settings and the paths/filenames in CMakeLists.txt. Don't forget to restart (or log off and log back on) after changing environment settings.
 
     ```txt
-    重大度レベル  コード  説明  プロジェクト  ファイル  行  抑制状態
-    エラー    'C:/opencv/build/x64/vc15/lib/opencv_world452d.lib', needed by 'LGFXOpenCV.exe', missing and no known rule to make it  C:\sandbox\LovyanGFX\examples\Advanced\CMake_OpenCV\out\build\x64-Debug\CMake_OpenCV  C:\sandbox\LovyanGFX\examples\Advanced\CMake_OpenCV\out\build\x64-Debug\ninja  1
+    Severity Level  Code  Description  Project  File  Line  Suppression State
+    Error    'C:/opencv/build/x64/vc15/lib/opencv_world452d.lib', needed by 'LGFXOpenCV.exe', missing and no known rule to make it  C:\sandbox\LovyanGFX\examples\Advanced\CMake_OpenCV\out\build\x64-Debug\CMake_OpenCV  C:\sandbox\LovyanGFX\examples\Advanced\CMake_OpenCV\out\build\x64-Debug\ninja  1
     ```
   ![vs_error_notfound_sdl](./images/vs_error_notfound_sdl.png)
   ![vs_error_notfound_opencv](./images/vs_error_notfound_opencv.png)
