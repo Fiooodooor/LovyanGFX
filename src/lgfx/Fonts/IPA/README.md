@@ -2,7 +2,7 @@
 
 https://moji.or.jp/ipafont/
 
-IPAexフォントおよびIPAフォントをu8g2形式に変換したファイルです。
+These are IPAex fonts and IPA fonts converted to u8g2 format.
 
 ## TTF to BDF
 
@@ -52,7 +52,7 @@ otf2bdf 3.1(http://sofia.nmsu.edu/~mleisher/Software/otf2bdf/)
 https://github.com/olikraus/u8g2/blob/master/tools/font/bdfconv/bdfconv.exe
 https://github.com/olikraus/u8g2/blob/master/tools/font/build/japanese3.map
 
-上記のbdfconv.exeと、japanese3.mapを元に、文字を追加したja.mapを利用しています。
+We use ja.map, which is based on the above bdfconv.exe and japanese3.map with additional characters added.
 
 ```
 bdfconv.exe -v -b 0 -f 1 -M "japanese3.map" ..\bdf\lgfx_font_japan_mincho_8.bdf    -o ..\output\lgfx_font_japan_mincho_8.c    -n lgfx_font_japan_mincho_8
@@ -94,5 +94,5 @@ bdfconv.exe -v -b 0 -f 1 -M "japanese3.map" ..\bdf\lgfx_font_japan_gothic_p_40.b
 copy ..\output\*.c lgfx_font_japan.c
 ```
 
-上記のファイルから /U8G2_FONT_SECTION\(".*"\) // の置換をしています。
+The replacement of /U8G2_FONT_SECTION\(".*"\) // has been performed in the above files.
 

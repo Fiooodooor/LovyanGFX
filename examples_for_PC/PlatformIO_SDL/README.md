@@ -1,32 +1,32 @@
 
-## Visual Studio Code + PlatformIO + SDL2 環境で LovyanGFXを使用する手順
+## Steps to use LovyanGFX with Visual Studio Code + PlatformIO + SDL2
 
-まず最初にVisual Studio Code をインストールし、PlatformIO を使用できる状態にする。  
+First, install Visual Studio Code and set up PlatformIO so it is ready to use.  
 
  ---
 
-### PlatformIOにて、 `platform = native` のビルドができる状態にする。
+### Set up PlatformIO to be able to build with `platform = native`.
 
-手順は下記 URL から `Installation` の項目を読んで実施する。  
+Follow the instructions by reading the `Installation` section at the URL below.  
 https://docs.platformio.org/en/latest/platforms/native.html#installation
 
-#### Linuxの場合
+#### For Linux
 
-`apt` で `build-essential` をインストールする。
+Install `build-essential` using `apt`.
 ```
 sudo apt update
 sudo apt install build-essential
 ```
 
-#### macOSの場合
-ターミナルから `xcode-select` をインストールする。
+#### For macOS
+Install `xcode-select` from the terminal.
 ```
 xcode-select --install
 ```
 
-#### Windowsの場合
-`MSYS2` をここ https://www.msys2.org/ から入手してインストールする。
-そのあと、Windowsの`システムのプロパティ`->`環境変数` を開き、 `PATH` に以下の３つのパスを追加する。
+#### For Windows
+Obtain and install `MSYS2` from https://www.msys2.org/.
+Then, open Windows `System Properties` -> `Environment Variables`, and add the following 3 paths to `PATH`.
 ```
 C:\msys64\mingw32\bin
 C:\msys64\ucrt64\bin
@@ -36,41 +36,41 @@ C:\msys64\usr\bin
 
  ---
 
-### PlatformIOにて、 SDL2 が使用できる状態にする。
+### Set up SDL2 for use with PlatformIO.
 
-手順は下記 URL から `Install SDL2` の項目を読んで実施する。  
+Follow the instructions by reading the `Install SDL2` section at the URL below.  
 https://docs.lvgl.io/latest/en/html/get-started/pc-simulator.html#install-sdl-2
 
 
-#### Linuxの場合
+#### For Linux
 
-apt-getでlibsdl2をインストールする。
+Install libsdl2 using apt-get.
 
 ```
 sudo apt-get install libsdl2 libsdl2-dev
 ```
 
-#### MacOS OSXの場合
+#### For macOS
 
-Homebrewを使ってsdl2をインストールする。
+Install sdl2 using Homebrew.
 ```
  brew install sdl2
 ```
 
-#### Windowsの場合
+#### For Windows
 
-`platform = native` のビルドを可能にする手順において、 msys2をインストール済みのはずなので、
-githubの SDLのリポジトリにアクセスし、SDL2-devel-x.xx.x-mingw のリリースパッケージを入手する。  
+Since you should have already installed msys2 in the steps to enable `platform = native` builds,
+go to the SDL repository on GitHub and obtain the SDL2-devel-x.xx.x-mingw release package.  
 https://github.com/libsdl-org/SDL/releases
 
-本記事作成時点のファイル名は `SDL2-devel-2.28.1-mingw.zip`  
-これを解凍し、出てきたフォルダの中にある `x86_64-w64-mingw32` フォルダを開き、中に以下の 4つのフォルダがあることを確認。
+At the time of writing, the filename is `SDL2-devel-2.28.1-mingw.zip`  
+Extract this archive, open the `x86_64-w64-mingw32` folder inside the extracted directory, and verify that it contains the following 4 folders.
  - share
  - bin
  - include
  - lib
 
-C:\msys64\mingw32\ を開き、上記の４つのフォルダと同名のフォルダが存在することを確認したら、C:\msys64\mingw32\ 内に上記フォルダの内容を追加する。（上書きコピー）
+Open C:\msys64\mingw32\, verify that folders with the same names as the above 4 folders exist, then copy the contents of the above folders into C:\msys64\mingw32\. (Overwrite copy)
 
  ---
 

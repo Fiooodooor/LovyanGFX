@@ -22,69 +22,69 @@ void loop(void)
 {
 
 /*
-  画像データを描画する関数は幾つか種類があります。
+  There are several functions for drawing image data.
 
-方法１．事前に描画範囲を設定しておき、次にデータの長さを指定して描画する方法
-方法２．描画する座標と幅・高さを指定してデータを描画する方法
+Method 1: Set the drawing area in advance, then specify the data length to draw.
+Method 2: Specify the coordinates, width, and height to draw the data.
 
 
 
-方法１．事前に描画範囲を設定しておき、次にデータの長さを指定して描画する方法
+Method 1: Set the drawing area in advance, then specify the data length to draw.
 
-この方法では、setWindow/setAddrWindow関数で描画範囲を設定したあと、
-writePixels/pushPixels関数で画像データの長さを指定して描画します。
+In this method, you set the drawing area with setWindow/setAddrWindow,
+then draw image data by specifying its length with writePixels/pushPixels.
 
-  setWindow( x0, y0, x1, y1 );   // 描画範囲の指定。左上座標と右下座標を指定します。
-  setAddrWindow( x, y, w, h );   // 描画範囲の指定。左上座標と幅と高さを指定します。
+  setWindow( x0, y0, x1, y1 );   // Set drawing area. Specify top-left and bottom-right coordinates.
+  setAddrWindow( x, y, w, h );   // Set drawing area. Specify top-left coordinates, width, and height.
 
-setWindow は画面外の座標を指定した場合の動作は保証されません。
-setAddrWindow は描画範囲外が指定された場合は範囲内に調整されます。
- ※ ただし自動調整された結果、実際に設定される幅や高さが指定した値より小さくなる可能性があるので注意が必要です。
+setWindow behavior is undefined if coordinates outside the screen are specified.
+setAddrWindow adjusts to fit within the screen if out-of-range values are specified.
+ Note: The auto-adjusted width or height may end up smaller than the specified values.
 
-  writePixels   ( *data, len, swap );  // 画像を描画する。(事前にstartWrite、事後にendWriteが必要）
-  pushPixels    ( *data, len, swap );  // 画像を描画する。(startWrite・endWriteは不要）
+  writePixels   ( *data, len, swap );  // Draw image. (Requires startWrite before and endWrite after)
+  pushPixels    ( *data, len, swap );  // Draw image. (startWrite/endWrite not required)
 
- ※ writePixelsはAdafruitGFX由来の関数で、pushPixelsはTFT_eSPI由来の関数です。
-    描画内容は同等ですが、startWrite/endWriteが自動で行われるか否かが違います。
+ Note: writePixels originates from AdafruitGFX, and pushPixels from TFT_eSPI.
+    The drawing result is the same, but they differ in whether startWrite/endWrite is called automatically.
 
-第１引数：画像データのポインタ（データ型に応じて色の形式を判断して変換が行われます。）
-第２引数：画像データのピクセル数（バイト数でない点に注意。）
-第３引数：バイト順変換フラグ（省略時は事前にsetSwapBytes関数で設定した値が使用されます。）
+1st argument: Pointer to image data (color format conversion is performed based on the data type.)
+2nd argument: Number of pixels in the image data (note: not bytes.)
+3rd argument: Byte-order swap flag (if omitted, the value set by setSwapBytes is used.)
 
-第１引数のdataの型に基づいて色の形式変換が行われます。
-  uint8_t*  の場合、 8bitカラー RGB332として扱います。
-  uint16_t* の場合、16bitカラー RGB565として扱います。
-  void*     の場合、24bitカラー RGB888として扱います。
- ※ （３バイトのプリミティブ型が無いため、void*型を24bitカラー扱いとしています）
+Color format conversion is performed based on the type of the data pointer:
+  uint8_t*  is treated as  8-bit color RGB332.
+  uint16_t* is treated as 16-bit color RGB565.
+  void*     is treated as 24-bit color RGB888.
+ Note: Since there is no 3-byte primitive type, void* is treated as 24-bit color.
 
- ※ LCDに描画する際に、LCDの色数モードに応じて色形式の変換が自動的に行われます。
+ Note: When drawing to the LCD, color format conversion is performed automatically based on the LCD's color mode.
 */
   lcd.clear(TFT_DARKGREY);
-  lcd.setColorDepth(16);  // LCDを16bitカラーモードに設定する。
-  lcd.setSwapBytes(true); // バイト順変換を有効にする。
+  lcd.setColorDepth(16);  // Set the LCD to 16-bit color mode.
+  lcd.setSwapBytes(true); // Enable byte-order swap.
   int len = image_width * image_height;
 
-  // 画像の幅と高さをsetAddrWindowで事前に設定し、writePixelsで描画します。
-  lcd.setAddrWindow(0, 0, image_width, image_height);         // 描画範囲を設定。
-  lcd.writePixels((uint16_t*)rgb565, len); // RGB565の16bit画像データを描画。
+  // Set the drawing area width and height with setAddrWindow in advance, then draw with writePixels.
+  lcd.setAddrWindow(0, 0, image_width, image_height);         // Set the drawing area.
+  lcd.writePixels((uint16_t*)rgb565, len); // Draw RGB565 16-bit image data.
 
-  // データとバイト順変換の指定が一致していない場合、色化けします。
+  // If the data and byte-order swap setting do not match, colors will be corrupted.
   lcd.setAddrWindow(0, 40, image_width, image_height);
-  // 第3引数でfalseを指定することでバイト順変換の有無を指定できます。
-  lcd.writePixels((uint16_t*)rgb565, len, false); // RGB565の画像をバイト順変換無しで描画すると色が化ける。
+  // You can specify whether to swap byte order by passing false as the third argument.
+  lcd.writePixels((uint16_t*)rgb565, len, false); // Drawing RGB565 image without byte-order swap causes color corruption.
 
-  // 描画範囲が画面外にはみ出すなどして画像の幅や高さと合わなくなった場合、描画結果が崩れます。
-  lcd.setAddrWindow(-1, 80, image_width, image_height); // X座標が-1（画面外）のため、正しく設定できない。
-  lcd.writePixels((uint16_t*)rgb565, len); // 描画先の幅と画像の幅が不一致のため描画内容が崩れる。
+  // If the drawing area extends outside the screen and doesn't match the image dimensions, the drawing result will be corrupted.
+  lcd.setAddrWindow(-1, 80, image_width, image_height); // X coordinate is -1 (outside screen), so it cannot be set correctly.
+  lcd.writePixels((uint16_t*)rgb565, len); // Drawing area width and image width mismatch causes corrupted output.
 
-  // データと型が一致していない場合も、描画結果が崩れます。
+  // If the data and type do not match, the drawing result will also be corrupted.
   lcd.setAddrWindow(0, 120, image_width, image_height);
-  // RGB565のデータをわざとuint8_tにキャストし、RGB332の8bitカラーとして扱わせる。
-  lcd.writePixels((uint8_t*)rgb565, len);  // 画像の形式と型が一致していないため描画が乱れる。
+  // Intentionally cast RGB565 data to uint8_t, treating it as RGB332 8-bit color.
+  lcd.writePixels((uint8_t*)rgb565, len);  // Image format and type mismatch causes corrupted output.
 
-  // データと型が一致していれば、描画先の色数に合わせて適切な形式変換が行われます。
+  // If the data and type match, appropriate format conversion is performed based on the destination color depth.
   lcd.setAddrWindow(0, 160, image_width, image_height);
-  lcd.writePixels((uint8_t*)rgb332, len);  // RGB332のデータでも16bitカラーのLCDに正しく描画できる。
+  lcd.writePixels((uint8_t*)rgb332, len);  // RGB332 data can be correctly drawn on a 16-bit color LCD.
 
 
 // ※ LCDへの画像データの送信は、メモリの若いアドレスにあるデータから順に1Byte単位で送信されます。

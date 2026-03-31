@@ -4,7 +4,7 @@ static LGFX lcd;
 
 void drawGradation(void)
 {
-  // 背景にグラデーションを描画する
+  // Draw a gradient on the background
   lcd.startWrite();
   lcd.setAddrWindow(0, 0, lcd.width(), lcd.height());
   for (int y = 0; y < lcd.height(); ++y) {
@@ -21,64 +21,64 @@ void setup(void)
 
   drawGradation();
 
-  // 文字の描画方法には大きく分けて２通り、print 系の関数と drawString 系の関数があります。
+  // There are two main ways to draw text: print-family functions and drawString-family functions.
 
-  // drawString 関数では、第１引数で文字列を指定し、第２引数でX座標、第３引数でY座標を指定します。
+  // In drawString, the 1st argument specifies the string, the 2nd is the X coordinate, and the 3rd is the Y coordinate.
   lcd.drawString("string!", 10, 10);
 
-  // drawNumber 関数では、第１引数が数値になります。
+  // In drawNumber, the 1st argument is a number.
   lcd.drawNumber(123, 100, 10);
 
-  // drawFloat 関数では、第１引数が数値、第２引数が小数点以下の桁数になり、第３引数がX座標、第４引数がY座標になります。
+  // In drawFloat, the 1st argument is a number, the 2nd is the decimal places, the 3rd is the X coordinate, and the 4th is the Y coordinate.
   lcd.drawFloat(3.14, 2, 150, 10);
 
-  // print 関数では、setCursor関数で指定した座標 (またはprint関数で最後に描画した文字の続き)に描画します。
+  // The print function draws at the coordinates set by setCursor (or continues from the last position drawn by print).
   lcd.setCursor(10, 20);
   lcd.print("print!");
 
-  // printf関数で、第２引数以降の内容を描画できます。(C言語のprintf準拠ですので文字列や浮動小数も描画できます)
+  // The printf function can draw formatted content. (Follows C printf conventions, so strings and floats are supported.)
   int value = 123;
   lcd.printf("test %d", value);
 
-  // println関数で、文字列を描画後に改行できます。print("\n");と同じ効果です。
+  // The println function adds a newline after drawing the string. Same effect as print("\n").
   lcd.println("println");
 
-  // フォントを変更するには、setFont関数を使用します。
-  // TFT_eSPIのsetTextFont関数と同じフォントは Font0 ～ Font8 になります。
-  // ※ エディタの入力支援が使える場合、引数に&fonts::まで入力する事でフォント一覧が表示されます
+  // To change the font, use the setFont function.
+  // The same fonts as TFT_eSPI's setTextFont are Font0 through Font8.
+  // Note: If your editor supports autocomplete, typing &fonts:: will show a list of available fonts.
   lcd.setFont(&fonts::Font4);
   lcd.println("TestFont4");
 
-  // TFT_eSPIとの互換性のためにsetTextFont関数による番号でのフォント変更にも対応しています。
-  // 引数に指定できる数字は 0, 2, 4, 6, 7, 8 です。(TFT_eSPI準拠です)
-  // ※ ただし この方法は、他の番号のフォントも強制的にバイナリに含まれサイズが膨らむため、非推奨です。
+  // For TFT_eSPI compatibility, font changes by number via setTextFont are also supported.
+  // Valid numbers are 0, 2, 4, 6, 7, 8. (Following TFT_eSPI conventions.)
+  // Note: This method is not recommended, as it forces all numbered fonts into the binary, increasing its size.
   lcd.setTextFont(2);
   lcd.println("TestFont2");
 
 
-  // setTextColorで色を変更できます。
-  // １つ目の引数が文字色、２つ目の引数が背景色になります。
+  // You can change colors with setTextColor.
+  // The 1st argument is the text color, the 2nd argument is the background color.
   lcd.setTextColor(0x00FFFFU, 0xFF0000U);
   lcd.print("CyanText RedBack");
-  // ※ 同じ場所に文字を繰り返し描画し直したい場合、背景色を指定して重ね書きすることを推奨します。
-  //    fillRect等で消去してから書き直すと、ちらつきが発生する可能性があります。
+  // Note: When repeatedly redrawing text at the same position, it is recommended to specify a background color
+  //       to overwrite cleanly. Using fillRect to clear first may cause flickering.
 
 
-  // setTextColorで第１引数のみを指定し第２引数を省略した場合は、
-  // 背景を塗り潰さず文字だけを描画します。
+  // If only the 1st argument is specified in setTextColor (2nd argument omitted),
+  // only the text is drawn without filling the background.
   lcd.setTextColor(0xFFFF00U);
   lcd.print("YellowText ClearBack");
 
 
-  // Font6は時計用の文字のみが収録されています。
+  // Font6 contains only clock-related characters.
   lcd.setFont(&fonts::Font6);
   lcd.print("apm.:-0369");
 
-  // Font7は７セグメント液晶風のフォントが収録されています。
+  // Font7 contains a 7-segment LCD style font.
   lcd.setFont(&fonts::Font7);
   lcd.print(".:-147");
 
-  // Font8は数字のみが収録されています。
+  // Font8 contains only numeric characters.
   lcd.setFont(&fonts::Font8);
   lcd.print(".:-258");
 
@@ -86,43 +86,43 @@ void setup(void)
   delay(3000);
   drawGradation();
 
-// IPAフォントをコンバートした日本語フォントが４種類ｘ９サイズ = 36通りプリセットされています。
-// 末尾の数字がサイズを表しており、8, 12, 16, 20, 24, 28, 32, 36, 40 が用意されています。
-// fonts::lgfxJapanMincho_12      // 明朝体 サイズ12 固定幅フォント
-// fonts::lgfxJapanMinchoP_16     // 明朝体 サイズ16 プロポーショナルフォント
-// fonts::lgfxJapanGothic_20      // ゴシック体 サイズ20 固定幅フォント
-// fonts::lgfxJapanGothicP_24     // ゴシック体 サイズ24 プロポーショナルフォント
+// 4 types x 9 sizes = 36 Japanese fonts converted from IPA fonts are preset.
+// The trailing number represents the size: 8, 12, 16, 20, 24, 28, 32, 36, 40 are available.
+// fonts::lgfxJapanMincho_12      // Mincho (serif) size 12, fixed-width font
+// fonts::lgfxJapanMinchoP_16     // Mincho (serif) size 16, proportional font
+// fonts::lgfxJapanGothic_20      // Gothic (sans-serif) size 20, fixed-width font
+// fonts::lgfxJapanGothicP_24     // Gothic (sans-serif) size 24, proportional font
 
-// efontをコンバートした日本語・韓国語・中国語（簡体字・繁体字）フォントが各４種類ｘ５サイズ＝20通りプリセットされています。
-// 数字がサイズを表しており、10, 12, 14, 16, 24 が用意されています。
-// 末尾の文字は b= ボールド(太字) / i= イタリック(斜体) を表しています。
-// fonts::efontJA_10              // 日本語 サイズ10
-// fonts::efontCN_12_b            // 簡体字 サイズ12 ボールド
-// fonts::efontTW_14_bi           // 繁体字 サイズ14 ボールドイタリック
-// fonts::efontKR_16_i            // 韓国語 サイズ16 イタリック
+// 4 types x 5 sizes = 20 Japanese/Korean/Chinese (Simplified/Traditional) fonts converted from efont are preset.
+// The number represents the size: 10, 12, 14, 16, 24 are available.
+// The trailing letter indicates b= bold / i= italic.
+// fonts::efontJA_10              // Japanese size 10
+// fonts::efontCN_12_b            // Simplified Chinese size 12 bold
+// fonts::efontTW_14_bi           // Traditional Chinese size 14 bold italic
+// fonts::efontKR_16_i            // Korean size 16 italic
 
   lcd.setCursor(0, 0);
-  lcd.setFont(&fonts::lgfxJapanMincho_16);   lcd.print("明朝体 16 Hello World\nこんにちは世界\n");
-//lcd.setFont(&fonts::lgfxJapanMinchoP_16);  lcd.print("明朝 P 16 Hello World\nこんにちは世界\n");
-  lcd.setFont(&fonts::lgfxJapanGothic_16);   lcd.print("ゴシック体 16 Hello World\nこんにちは世界\n");
-//lcd.setFont(&fonts::lgfxJapanGothicP_16);  lcd.print("ゴシック P 16 Hello World\nこんにちは世界\n");
+  lcd.setFont(&fonts::lgfxJapanMincho_16);   lcd.print("Mincho 16 Hello World\nHello World\n");
+//lcd.setFont(&fonts::lgfxJapanMinchoP_16);  lcd.print("Mincho P 16 Hello World\nHello World\n");
+  lcd.setFont(&fonts::lgfxJapanGothic_16);   lcd.print("Gothic 16 Hello World\nHello World\n");
+//lcd.setFont(&fonts::lgfxJapanGothicP_16);  lcd.print("Gothic P 16 Hello World\nHello World\n");
 
-// ※ やまねこ氏の [日本語フォントサブセットジェネレーター](https://github.com/yamamaya/lgfxFontSubsetGenerator)
-//    を使用することで、必要な文字だけを含む小サイズのフォントデータを作成できます。
+// Note: You can use yamaneko's [Japanese Font Subset Generator](https://github.com/yamamaya/lgfxFontSubsetGenerator)
+//    to create smaller font data containing only the characters you need.
 
 
   delay(3000);
   drawGradation();
 
 
-  // LovyanGFXでは AdafruitGFX フォントも setFont 関数で使用できます。
-  // (TFT_eSPIとの互換性のために setFreeFont関数も用意しています)
+  // LovyanGFX can also use AdafruitGFX fonts via the setFont function.
+  // (setFreeFont is also provided for TFT_eSPI compatibility.)
   lcd.setFont(&fonts::FreeSerif9pt7b);
 
 
-  // 右揃え や 中央揃え で描画したい場合は、setTextDatum 関数で基準位置を指定します。
-  // 縦方向が top、middle、baseline、bottomの4通り、横方向が left、center、rightの3通りです。
-  // 縦と横の指定を組み合わせた12通りの中から指定します。
+  // To draw text right-aligned or center-aligned, use setTextDatum to specify the anchor position.
+  // Vertical options: top, middle, baseline, bottom (4 choices). Horizontal: left, center, right (3 choices).
+  // Choose from the 12 combinations of vertical and horizontal settings.
   lcd.setTextDatum( textdatum_t::top_left        );
   lcd.setTextDatum( textdatum_t::top_center      );
   lcd.setTextDatum( textdatum_t::top_right       );
@@ -135,27 +135,27 @@ void setup(void)
   lcd.setTextDatum( textdatum_t::bottom_left     );
   lcd.setTextDatum( textdatum_t::bottom_center   );
   lcd.setTextDatum( textdatum_t::bottom_right    );
-  // ※  "textdatum_t::" は省略可能です
-  // ※ print系関数には縦方向の指定のみ効果があり、横方向の指定は効果がありません。
+  // Note: "textdatum_t::" can be omitted.
+  // Note: For print-family functions, only the vertical setting takes effect; the horizontal setting has no effect.
 
-  // 右下揃え
+  // Bottom-right aligned
   lcd.setTextDatum( bottom_right );
   lcd.drawString("bottom_right",  lcd.width() / 2,  lcd.height() / 2);
 
-  // 左下揃え
+  // Bottom-left aligned
   lcd.setTextDatum( bottom_left );
   lcd.drawString("bottom_left",  lcd.width() / 2,  lcd.height() / 2);
 
-  // 右上揃え
+  // Top-right aligned
   lcd.setTextDatum( top_right );
   lcd.drawString("top_right",  lcd.width() / 2,  lcd.height() / 2);
 
-  // 左上揃え
+  // Top-left aligned
   lcd.setTextDatum( top_left );
   lcd.drawString("top_left",  lcd.width() / 2,  lcd.height() / 2);
 
 
-  // 基準座標に中心線を描画
+  // Draw crosshairs at the anchor coordinates
   lcd.drawFastVLine(lcd.width() / 2, 0, lcd.height(), 0xFFFFFFU);
   lcd.drawFastHLine(0, lcd.height() / 2, lcd.width(), 0xFFFFFFU);
 
@@ -169,14 +169,14 @@ void setup(void)
 
   lcd.drawRect(8, 8, lcd.width() - 16, lcd.height() - 16, 0xFFFFFFU);
 
-  // setClipRect関数で描画する範囲を限定できます。指定した範囲外には描画されなくなります。
-  // ※ テキスト系のみならず、すべての描画関数に影響します。
+  // setClipRect limits the drawing area. Nothing will be drawn outside the specified region.
+  // Note: This affects all drawing functions, not just text.
   lcd.setClipRect(10, 10, lcd.width() - 20, lcd.height() - 20);
 
 
-  // setTextSize 関数で 文字の拡大率を指定します。
-  // 第１引数で横方向の倍率、第２引数で縦方向の倍率を指定します。
-  // 第２引数を省略した場合は、第１引数の倍率が縦と横の両方に反映されます。
+  // setTextSize specifies the text magnification.
+  // The 1st argument is the horizontal scale, the 2nd is the vertical scale.
+  // If the 2nd argument is omitted, the 1st argument applies to both horizontal and vertical.
   lcd.setTextSize(2.7, 4);
   lcd.println("Size 2.7 x 4");
 
@@ -196,21 +196,21 @@ void setup(void)
 
   lcd.setTextSize(1);
 
-  // setTextWrap 関数で、print 関数が画面端(描画範囲端)に到達した時の折り返し動作を指定します。
-  // 第１引数をtrueにすると、右端到達後に左端へ移動します。
-  // 第２引数をtrueにすると、下端到達後に上端へ移動します。(省略時:false)
+  // setTextWrap specifies the wrapping behavior when print reaches the edge of the screen (drawing area).
+  // Setting the 1st argument to true wraps text from the right edge to the left edge.
+  // Setting the 2nd argument to true wraps text from the bottom edge to the top edge. (Default: false)
   lcd.setTextWrap(false);
   lcd.println("setTextWrap(false) testing... long long long long string wrap test string ");
-  // false指定時は位置調整されず、描画範囲外にはみ出した部分は描画されません。
+  // When false, position is not adjusted and text extending beyond the drawing area is not drawn.
 
   lcd.setTextWrap(true);
   lcd.setTextColor(0xFFFF00U, 0);
   lcd.println("setTextWrap(true) testing... long long long long string wrap test string ");
-  // true指定時は描画範囲内に収まるよう座標を自動調整します。
+  // When true, coordinates are automatically adjusted to stay within the drawing area.
 
   delay(1000);
 
-  // 第２引数にtrue指定時は、画面下端に到達すると続きを上端から描画します。
+  // When the 2nd argument is true, text continues from the top when it reaches the bottom of the screen.
   lcd.setTextColor(0xFFFFFFU, 0);
   lcd.setTextWrap(true, true);
   lcd.println("setTextWrap(true, true) testing...");
@@ -222,12 +222,12 @@ void setup(void)
 
   drawGradation();
 
-  // setTextScroll 関数で、画面下端に到達した時のスクロール動作を指定します。
-  // setScrollRect 関数でスクロールする矩形範囲を指定します。(未指定時は画面全体がスクロールします)
-  // ※ スクロール機能は、LCDが画素読出しに対応している必要があります。
+  // setTextScroll specifies the scrolling behavior when text reaches the bottom of the screen.
+  // setScrollRect specifies the rectangular area to scroll. (If not set, the entire screen scrolls.)
+  // Note: The scroll feature requires the LCD to support pixel readback.
   lcd.setTextScroll(true);
 
-  // 第１～第４引数で X Y Width Height の矩形範囲を指定し、第５引数でスクロール後の色を指定します。第５引数は省略可(省略時は変更なし)
+  // Arguments 1-4 specify the X, Y, Width, Height rectangle. The 5th argument specifies the fill color after scrolling (optional).
   lcd.setScrollRect(10, 10, lcd.width() - 20, lcd.height() - 20, 0x00001FU);
 
   for (int i = 0; i < 50; ++i) {
@@ -235,10 +235,10 @@ void setup(void)
   }
 
 
-  // setClipRectの範囲指定を解除します。
+  // Clear the clipping rectangle set by setClipRect.
   lcd.clearClipRect();
 
-  // setScrollRectの範囲指定を解除します。
+  // Clear the scroll rectangle set by setScrollRect.
   lcd.clearScrollRect();
 
 
@@ -246,7 +246,7 @@ void setup(void)
   lcd.setTextColor(0xFFFFFFU, 0);
 
 
-  // setTextPadding 関数で、drawString 系関数で背景塗り潰し時の最小幅を指定できます。
+  // setTextPadding specifies the minimum width for background fill when using drawString-family functions.
   lcd.setTextPadding(100);
 
 
@@ -286,7 +286,7 @@ void drawNumberTest(const lgfx::IFont* font)
 
 void loop(void)
 {
-// ※ 名前が"Free"で始まるフォントは 9pt 12pt 18pt 24ptの４種類があります。
+// Note: Fonts whose names start with "Free" are available in 4 sizes: 9pt, 12pt, 18pt, and 24pt.
   drawNumberTest( &fonts::Font0                   );
   drawNumberTest( &fonts::Font2                   );
   drawNumberTest( &fonts::Font4                   );

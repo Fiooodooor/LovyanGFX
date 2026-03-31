@@ -1,5 +1,5 @@
 ---
-name: Feature request (機能要望)
+name: Feature request
 about: Suggest an idea for this project
 title: ''
 labels: enhancement
@@ -8,7 +8,6 @@ assignees: ''
 ---
 
 **Carefully written requests are more likely to be given priority.**
-**丁寧に記述された要望は優先して対応される可能性が高くなります。**
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
