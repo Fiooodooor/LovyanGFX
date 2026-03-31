@@ -1,11 +1,11 @@
 # lgfx::Panel_CVBS for ESP32
 
- - ESP32の GPIO25, または GPIO26 からビデオ信号を出力できます。(ESP32-S2,S3,C3には対応していません)
- - I2S の channel0 と DAC を利用してビデオ信号を生成しています。
- - ESP32のメモリ上に映像フレームバッファを確保するためメモリ消費は多めです。(PSRAMの利用が可能です)
+ - Video signal can be output from GPIO25 or GPIO26 of the ESP32. (ESP32-S2, S3, C3 are not supported)
+ - Video signal is generated using I2S channel0 and DAC.
+ - Memory consumption is relatively high because a video frame buffer is allocated in the ESP32's memory. (PSRAM can be used)
 
 
-出力可能な信号の種類 (Types of signals that can be output)
+Types of signals that can be output
 ----------------
 
  - NTSC
@@ -14,21 +14,21 @@
  - PAL-M
  - PAL-N
 
-NTSCとNTSC-Jは黒の信号レベルが異なっており、NTSCは7.5IRE、NTSC-Jは0IREに設定されています。<br>
-NTSCを使用した際に黒が僅かに白浮きしていると感じる場合はNTSC-Jに変更してみてください。
+NTSC and NTSC-J have different black signal levels; NTSC is set to 7.5 IRE and NTSC-J is set to 0 IRE.<br>
+If you notice that blacks appear slightly washed out when using NTSC, try switching to NTSC-J.
 
 
 
-出力解像度 (Output resolution)
+Output resolution
 ----------------
 
- - 出力できる最大解像度は信号タイプによって差があります。
+ - The maximum output resolution varies depending on the signal type.
    - 720 x 480  (PAL-M,NTSC,NTSC-J)
    - 864 x 576  (PAL)
    - 720 x 576  (PAL-N)
- - 最大解像度以下であれば、任意の解像度を設定可能です。
- - 最大解像度を整数で約分した解像度の指定を推奨します。
- - それ以外の解像度を指定した場合はピクセルの比率が場所によって差が生じ、表示が少し歪になります。
+ - Any resolution can be set as long as it is equal to or less than the maximum resolution.
+ - It is recommended to specify a resolution that is the maximum resolution divided by an integer.
+ - If other resolutions are specified, the pixel ratio will vary by position, causing the display to appear slightly distorted.
 
 
 <TABLE>
@@ -49,7 +49,7 @@ NTSCを使用した際に黒が僅かに白浮きしていると感じる場合�
   <TD colspan="2"> 576 </TD>
  </TR>
  <TR align="center">
-  <TH> recommended<BR>width<BR>推奨 幅</TH>
+  <TH> recommended<BR>width</TH>
   <TD colspan="2"> 
     720/1 = 720<br>
     720/1.5=480<br>
@@ -70,7 +70,7 @@ NTSCを使用した際に黒が僅かに白浮きしていると感じる場合�
   </TD>
  </TR>
  <TR align="center">
-  <TH> recommended<BR>height<BR>推奨 高さ</TH>
+  <TH> recommended<BR>height</TH>
   <TD>
     480/1 = 480<br>
     480/2 = 240<br>
@@ -95,7 +95,7 @@ NTSCを使用した際に黒が僅かに白浮きしていると感じる場合�
 
 
 
-使い方 How to use
+How to use
 ----------------
 ```c
 
@@ -110,60 +110,60 @@ public:
 
   LGFX(void)
   {
-    { // 表示パネル制御の設定を行います。
-      auto cfg = _panel_instance.config();    // 表示パネル設定用の構造体を取得します。
+    { // Configure display panel control settings.
+      auto cfg = _panel_instance.config();    // Get the structure for display panel settings.
 
-      // 出力解像度を設定;
-      cfg.memory_width  = 240; // 出力解像度 幅
-      cfg.memory_height = 160; // 出力解像度 高さ
+      // Set the output resolution;
+      cfg.memory_width  = 240; // Output resolution width
+      cfg.memory_height = 160; // Output resolution height
 
-      // 実際に利用する解像度を設定;
-      cfg.panel_width  = 208;  // 実際に使用する幅   (memory_width と同値か小さい値を設定する)
-      cfg.panel_height = 128;  // 実際に使用する高さ (memory_heightと同値か小さい値を設定する)
+      // Set the resolution actually used;
+      cfg.panel_width  = 208;  // Actual width used (set to a value equal to or less than memory_width)
+      cfg.panel_height = 128;  // Actual height used (set to a value equal to or less than memory_height)
 
-      // 表示位置オフセット量を設定;
-      cfg.offset_x = 16;       // 表示位置を右にずらす量 (初期値 0)
-      cfg.offset_y = 16;       // 表示位置を下にずらす量 (初期値 0)
+      // Set display position offset;
+      cfg.offset_x = 16;       // Amount to shift the display position to the right (default 0)
+      cfg.offset_y = 16;       // Amount to shift the display position downward (default 0)
 
       _panel_instance.config(cfg);
 
 
-// 通常は memory_width と panel_width に同じ値を指定し、 offset_x = 0 で使用します。;
-// 画面端の表示が画面外に隠れるのを防止したい場合は、 panel_width の値をmemory_widthより小さくし、offset_x で左右の位置調整をします。;
-// 例えば memory_width より panel_width を 32 小さい値に設定した場合、offset_x に 16 を設定することで左右位置が中央寄せになります。;
-// 上下方向 (memory_height , panel_height , offset_y ) についても同様に、必要に応じて調整してください。;
+// Normally, set the same value for memory_width and panel_width, and use offset_x = 0.;
+// To prevent the display at the screen edges from being hidden outside the screen, set panel_width to a value smaller than memory_width and adjust the horizontal position with offset_x.;
+// For example, if panel_width is set to a value 32 less than memory_width, setting offset_x to 16 will center the display horizontally.;
+// Adjust the vertical direction (memory_height, panel_height, offset_y) in the same way as needed.;
 
     }
 
     {
       auto cfg = _panel_instance.config_detail();
 
-      // 出力信号の種類を設定;
+      // Set the output signal type;
       // cfg.signal_type = cfg.signal_type_t::NTSC;
       cfg.signal_type = cfg.signal_type_t::NTSC_J;
       // cfg.signal_type = cfg.signal_type_t::PAL;
       // cfg.signal_type = cfg.signal_type_t::PAL_M;
       // cfg.signal_type = cfg.signal_type_t::PAL_N;
 
-      // 出力先のGPIO番号を設定;
-      cfg.pin_dac = 26;       // DACを使用するため、 25 または 26 のみが選択できます;
+      // Set the output GPIO pin number;
+      cfg.pin_dac = 26;       // Only 25 or 26 can be selected because DAC is used;
 
-      // PSRAMメモリ割当の設定;
-      cfg.use_psram = 1;      // 0=PSRAM不使用 / 1=PSRAMとSRAMを半々使用 / 2=全部PSRAM使用;
+      // PSRAM memory allocation settings;
+      cfg.use_psram = 1;      // 0=No PSRAM / 1=Half PSRAM and half SRAM / 2=All PSRAM;
 
-      // 出力信号の振幅の強さを設定;
-      cfg.output_level = 128; // 初期値128
-      // ※ GPIOに保護抵抗が付いている等の理由で信号が減衰する場合は数値を上げる。;
-      // ※ M5StackCore2 はGPIOに保護抵抗が付いているため 200 を推奨。;
+      // Set the output signal amplitude strength;
+      cfg.output_level = 128; // Default value 128
+      // * If the signal is attenuated due to protection resistors on the GPIO, increase this value.;
+      // * For M5Stack Core2, 200 is recommended because it has protection resistors on the GPIO.;
 
-      // 彩度信号の振幅の強さを設定;
-      cfg.chroma_level = 128; // 初期値128
-      // 数値を下げると彩度が下がり、0で白黒になります。数値を上げると彩度が上がります。;
+      // Set the chrominance signal amplitude strength;
+      cfg.chroma_level = 128; // Default value 128
+      // Lowering the value decreases saturation; 0 produces black and white. Increasing the value increases saturation.;
 
-      // バックグラウンドでPSRAMの読出しを行うタスクの優先度を設定;
+      // Set the priority of the background task that reads from PSRAM;
       // cfg.task_priority = 25;
 
-      // バックグラウンドでPSRAMの読出しを行うタスクを実行するCPUを選択 (APP_CPU_NUM or PRO_CPU_NUM);
+      // Select the CPU to run the background task that reads from PSRAM (APP_CPU_NUM or PRO_CPU_NUM);
       // cfg.task_pinned_core = PRO_CPU_NUM;
 
       _panel_instance.config_detail(cfg);
@@ -178,15 +178,15 @@ LGFX gfx;
 
 void setup(void)
 {
-// 色数の指定 (省略時は rgb332_1Byte)
-//gfx.setColorDepth( 8);        // RGB332 256色
-//gfx.setColorDepth(16);        // RGB565 65536色
-//gfx.setColorDepth(lgfx::color_depth_t::rgb332_1Byte);   // RGB332 256色
-//gfx.setColorDepth(lgfx::color_depth_t::rgb565_2Byte);   // RGB565 65536色
-//gfx.setColorDepth(lgfx::color_depth_t::grayscale_8bit); // モノクロ 256階調
+// Specify color depth (default is rgb332_1Byte)
+//gfx.setColorDepth( 8);        // RGB332 256 colors
+//gfx.setColorDepth(16);        // RGB565 65536 colors
+//gfx.setColorDepth(lgfx::color_depth_t::rgb332_1Byte);   // RGB332 256 colors
+//gfx.setColorDepth(lgfx::color_depth_t::rgb565_2Byte);   // RGB565 65536 colors
+//gfx.setColorDepth(lgfx::color_depth_t::grayscale_8bit); // Grayscale 256 shades
 
-//※ 実行中に setColorDepth で色数を変更することも可能ですが、
-//   メモリの再割当を実行するため描画内容は無効になります。
+//* It is possible to change the color depth with setColorDepth during execution,
+//  but the drawn content will be invalidated due to memory reallocation.
 
   gfx.init();
 
