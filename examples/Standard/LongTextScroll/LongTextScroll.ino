@@ -12,30 +12,30 @@ void setup(void)
 {
   lcd.init();
 
-  // 画面が横長になるように回転
+  // Rotate so the screen is landscape
   if (lcd.width() < lcd.height()) lcd.setRotation(lcd.getRotation() ^ 1);
 
   canvas.setColorDepth(8);
   canvas.setFont(&fonts::lgfxJapanMinchoP_32);
-  canvas.setTextWrap(false);        // 右端到達時のカーソル折り返しを禁止
-  canvas.createSprite(lcd.width() + 36, 36); // 画面幅+１文字分の横幅を用意
+  canvas.setTextWrap(false);        // Disable cursor wrapping when reaching the right edge
+  canvas.createSprite(lcd.width() + 36, 36); // Prepare width of screen + one character
 }
 
 void loop(void)
 {
-  int32_t cursor_x = canvas.getCursorX() - 1;   // 現在のカーソル位置を取得し、1ドット左に移動
-  if (cursor_x <= 0) // カーソル位置が左端に到達している場合は一周したと判断
+  int32_t cursor_x = canvas.getCursorX() - 1;   // Get current cursor position and move 1 pixel to the left
+  if (cursor_x <= 0) // If cursor has reached the left edge, it has completed one loop
   {
-    textpos = 0;            // 文字列の読取り位置をリセット
-    cursor_x = lcd.width(); // 新たな文字が画面右端に描画されるようにカーソル位置を変更
+    textpos = 0;            // Reset the text read position
+    cursor_x = lcd.width(); // Change cursor position so new text is drawn at the right edge of the screen
   }
 
-  canvas.setCursor(cursor_x, 0); // カーソル位置を更新
-  canvas.scroll(-1, 0);          // キャンバスの内容を1ドット左にスクロール
-  while (textpos < textlen && cursor_x <= lcd.width()) // 画面右端に文字が書けるか判定
+  canvas.setCursor(cursor_x, 0); // Update cursor position
+  canvas.scroll(-1, 0);          // Scroll canvas content 1 pixel to the left
+  while (textpos < textlen && cursor_x <= lcd.width()) // Check if text can be drawn at the right edge of the screen
   {
-    canvas.print(text[textpos++]);   // 1バイトずつ出力 (マルチバイト文字でもこの処理で動作します)
-    cursor_x = canvas.getCursorX();  // 出力後のカーソル位置を取得
+    canvas.print(text[textpos++]);   // Output 1 byte at a time (this also works for multi-byte characters)
+    cursor_x = canvas.getCursorX();  // Get cursor position after output
   }
 
   canvas.pushSprite(&lcd, 0, 0);

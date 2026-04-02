@@ -7,8 +7,8 @@ add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>")
 
-# ビルド対象にするファイルを指定する;
-# LovyanGFXのあるパスと位置関係を変えた場合は相対パス記述を環境に合わせて調整すること;
+# Specify the files to include in the build;
+# If you change the relative position of LovyanGFX, adjust the relative path descriptions to match your environment;
 file(GLOB Target_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS 
     *.cpp
     ../../../LovyanGFX/src/lgfx/Fonts/efont/*.c
@@ -21,14 +21,14 @@ file(GLOB Target_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS
     )
 add_executable (LGFXOpenCV ${Target_Files})
 
-# includeするファイルのパスを指定する;
-# LovyanGFXのあるパスと位置関係を変えた場合は相対パス記述を環境に合わせて調整すること;
+# Specify the path of the files to include;
+# If you change the relative position of LovyanGFX, adjust the relative path descriptions to match your environment;
 target_include_directories(LGFXOpenCV PUBLIC "../../../LovyanGFX/src")
 
-# OpenCVを配置したパス内のincludeのパスを指定する;
+# Specify the include path within the directory where OpenCV is installed;
 target_include_directories(LGFXOpenCV PUBLIC "C:/opencv/build/include")
 
-# OpenCVを配置したパス内の.libファイルのパスを指定する;
+# Specify the path to the .lib files within the directory where OpenCV is installed;
 target_link_libraries(LGFXOpenCV PUBLIC "C:/opencv/build/x64/vc15/lib/opencv_world452d.lib" )
 
 target_compile_features(LGFXOpenCV PUBLIC cxx_std_17)

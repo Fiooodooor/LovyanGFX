@@ -140,7 +140,7 @@ namespace lgfx
             _bus->writeCommand(REG_INDEX_DRAW_PICTURE | x_start << 8 | y << (3 + 16), 24);
             _bus->writeCommand(index | 1 << (3+8) | 1 << 16, 24);
             _bus->endTransaction();
-            lgfx::delayMicroseconds(index << 5); // 描画が終わるまで少し待つ
+            lgfx::delayMicroseconds(index << 5); // Wait briefly until drawing is complete
             index = 0;
           }
         }
@@ -164,7 +164,7 @@ namespace lgfx
       if (_bus->writeCommand(REG_INDEX_READ_KEY + (idx & 1), 8))
       {
         _bus->endTransaction();
-        lgfx::delayMicroseconds(512); // データ取得可能になるまで少し待つ
+        lgfx::delayMicroseconds(512); // Wait briefly until data is ready to be retrieved
         _bus->beginRead();
         if (_bus->readBytes(&res, 1, false, true)) { retry = 0; }
       }

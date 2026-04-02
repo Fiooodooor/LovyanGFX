@@ -1489,13 +1489,13 @@ namespace lgfx
     /// This requires a uint16_t array with 8 elements. ( or nullptr )
     template <typename T>
     void calibrateTouch(uint16_t *parameters, const T& color_fg, const T& color_bg, uint8_t size = 10)
-    { // 第1引数 にuint16_t[8]のポインタを渡すことで、setTouchCalibrateで使用できるキャリブレーション値を得ることが出来る。;
-      // この値をフラッシュ等に記録しておき、次回起動時にsetTouchCalibrateを使うことで、手作業によるキャリブレーションを省略できる。;
+    { // By passing a pointer to uint16_t[8] as the first argument, you can obtain calibration values that can be used with setTouchCalibrate.;
+      // By saving this value to flash memory etc. and using setTouchCalibrate on the next startup, manual calibration can be skipped.;
       calibrate_touch(parameters, _write_conv.convert(color_fg), _write_conv.convert(color_bg), size);
     }
 
     /// This requires a uint16_t array with 8 elements.
-    /// calibrateTouchで得たキャリブレーション値を用いて設定を再現する。;
+    /// Restore settings using calibration values obtained from calibrateTouch.;
     void setTouchCalibrate(uint16_t *parameters)
     {
       panel()->setCalibrate(parameters);

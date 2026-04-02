@@ -116,7 +116,7 @@ namespace lgfx
           case 0x02: // move info  (not support)
             return false;
 
-          default:  // 絶対モードデータ;
+          default:  // Absolute mode data;
             {
               int_fast16_t len = code[1];
               int_fast16_t dbyte = ((int_fast16_t)code[1] + 1) >> 1;

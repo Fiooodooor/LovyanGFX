@@ -169,7 +169,7 @@ namespace lgfx
       do
       {
         param->fp_copy(&rawcolor, 0, 1, param);
-        /// xとyを入れ替えて処理する;
+        /// Process with x and y swapped;
         _draw_pixel_inner(y, x, rawcolor);
         if (x != xe)
         {

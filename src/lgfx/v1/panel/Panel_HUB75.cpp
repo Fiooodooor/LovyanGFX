@@ -79,7 +79,7 @@ namespace lgfx
     }
 
     _initialized = true;
-    // 転送開始
+    // Start transfer
     _bus->beginTransaction();
 
     return true;
@@ -142,7 +142,7 @@ namespace lgfx
         break;
 
       case 2:
-        // swap565ではなく rgb565で扱う
+        // Handle as rgb565 instead of swap565
         ((uint16_t*)buf)[x] = rawcolor << 8 | ((rawcolor >> 8) & 0xFF);
         break;
 
@@ -165,7 +165,7 @@ namespace lgfx
         return buf [x];
 
       case 2:
-      { // swap565ではなく rgb565で扱う
+      { // Handle as rgb565 instead of swap565
         uint32_t tmp = ((uint16_t*)buf)[x];
         return ((uint8_t)tmp << 8) | (tmp >> 8);
       }

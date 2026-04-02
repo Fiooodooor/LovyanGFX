@@ -115,9 +115,9 @@ namespace lgfx
 
   bool Bus_RGB::init(void)
   {
-// ここでは ESP-IDFのLCDドライバに初期化部分だけ任せる
-// 本来なら esp_lcd_rgb_panel_config_t を使ってRGBバスを作成するところだが、
-// フレームバッファの確保やイベントハンドラは自前で処理したいので、敢えて i80バスを作成する。
+// Here we only delegate the initialization part to the ESP-IDF LCD driver
+// Normally we would create an RGB bus using esp_lcd_rgb_panel_config_t, but
+// since we want to handle frame buffer allocation and event handlers ourselves, we intentionally create an i80 bus instead.
 /*
     esp_lcd_rgb_panel_config_t _panel_config;
 

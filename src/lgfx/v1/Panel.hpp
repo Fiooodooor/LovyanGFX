@@ -76,7 +76,7 @@ namespace lgfx
       };
     };
     uint8_t _rotation = 0;
-    epd_mode_t _epd_mode = (epd_mode_t)0;  // EPDでない場合は0。それ以外の場合はEPD描画モード;
+    epd_mode_t _epd_mode = (epd_mode_t)0;  // 0 if not EPD. Otherwise, the EPD drawing mode;
     bool _invert = false;
     bool _auto_display = false;
 

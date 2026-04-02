@@ -714,13 +714,13 @@ namespace lgfx
       }
       // 
       size_t l = length - 1;
-      // read実行時にACKを送信
+      // Send ACK during read
       i2cm->CTRLB.bit.ACKACT = 0b0;
       for (size_t i = 0; i < l; i++)
       {
         data[i] = readDataMasterWIRE(i2cm);
       }
-      // 最後はNACKを送信
+      // Send NACK for the last byte
       if (last_nack) { i2cm->CTRLB.bit.ACKACT = 0b1; }
       data[l] = readDataMasterWIRE(i2cm);
       return {};

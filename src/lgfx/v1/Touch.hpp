@@ -45,7 +45,7 @@ namespace lgfx
       uint16_t x_max = 3600;
       uint16_t y_min = 0;
       uint16_t y_max = 3600;
-      bool bus_shared = true;          /// パネルとタッチが同じバスに繋がっている場合true;
+      bool bus_shared = true;          /// true if the panel and touch share the same bus;
       int16_t pin_int = -1;
       int16_t pin_rst = -1;
       uint8_t offset_rotation = 0;

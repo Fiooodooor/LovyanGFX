@@ -79,7 +79,7 @@ namespace lgfx
 
 //----------------------------------------------------------------------------
 
-  // Datasheet: https://github.com/lewisxhe/SensorLib/blob/master/datasheet/海栎创触摸芯片移植手册-v3.5-20220701(1).pdf
+  // Datasheet: https://github.com/lewisxhe/SensorLib/blob/master/datasheet/Hynitron-Touch-Chip-Porting-Manual-v3.5-20220701(1).pdf
 
   struct Touch_CST226 : public ITouch
   {

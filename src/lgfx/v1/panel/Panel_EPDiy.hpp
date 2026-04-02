@@ -75,7 +75,7 @@ namespace lgfx
   private:
     config_detail_t _config_detail;
 
-    // フレームバッファはEPDiyに用意してもらうのでここでの戻り値は0とする
+    // Frame buffer is provided by EPDiy, so return 0 here
     size_t _get_buffer_length(void) const override { return 0; }
     uint8_t _read_pixel(uint_fast16_t x, uint_fast16_t y);
     void _draw_pixel(uint_fast16_t x, uint_fast16_t y, uint32_t value);

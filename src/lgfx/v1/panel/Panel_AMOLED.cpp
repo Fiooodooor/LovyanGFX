@@ -182,7 +182,7 @@ namespace lgfx
             // ESP_LOGD("Panel_AMOLED","setRotation %d", r);
             r &= 7;
             _rotation = r;
-            // offset_rotationを加算 (0~3:回転方向、 4:上下反転フラグ);
+            // Add offset_rotation (0~3: rotation direction, 4: vertical flip flag);
             _internal_rotation = ((r + _cfg.offset_rotation) & 3) | ((r & 4) ^ (_cfg.offset_rotation & 4));
 
             auto ox = _cfg.offset_x;
@@ -698,8 +698,8 @@ namespace lgfx
                 uint8_t bits = (_write_depth & color_depth_t::bit_mask);
                 // ESP_LOGD("LGFX", "color has %d bits (%d bytes)", bits, bits/8);
                 w = (w + 3) & ~3; // round up to nearest multiple of 4
-                // 暫定実装。画面全体のバッファを一括で確保する。
-                // ToDo : 分割確保
+                // Provisional implementation. Allocate buffer for the entire screen at once.
+                // ToDo : Allocate in segments
                 int framebuffersize = (w * (bits >> 3)) * h;
                 //log_d("framebuffersize: %d bytes (expected=%d)", framebuffersize, 600*452*2);
                 _frame_buffer = (uint8_t*)heap_alloc_psram(framebuffersize);

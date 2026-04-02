@@ -33,12 +33,12 @@ namespace lgfx
       return false;
     }
 
-    // pin_csが設定されておらずバスタイプがi2cでない場合は、
-    // トランザクション終了時にnopを送信する。
-    // これによってSPIバスをSDカード等と共有が可能となる。
-    // ※ _nop_closingがtrueであることをチェックしている理由は、
-    //    派生クラス側でこの機能を無効化できるようにするため。
-    //    具体的には、GC9A01はNOPを受信すると誤動作を起こすため無効化する必要がある。
+    // If pin_cs is not set and the bus type is not I2C,
+    // send a NOP at the end of the transaction.
+    // This enables sharing the SPI bus with SD cards, etc.
+    // * The reason for checking that _nop_closing is true is
+    //    to allow derived classes to disable this feature.
+    //    Specifically, GC9A01 malfunctions when receiving NOP, so it needs to be disabled.
     _nop_closing = _nop_closing && (_cfg.pin_cs < 0) && (_bus->busType() != bus_type_t::bus_i2c);
 
     startWrite(true);
@@ -126,7 +126,7 @@ namespace lgfx
   {
     r &= 7;
     _rotation = r;
-    // offset_rotationを加算 (0~3:回転方向、 4:上下反転フラグ);
+    // Add offset_rotation (0~3: rotation direction, 4: vertical flip flag);
     _internal_rotation = ((r + _cfg.offset_rotation) & 3) | ((r & 4) ^ (_cfg.offset_rotation & 4));
 
     auto ox = _cfg.offset_x;

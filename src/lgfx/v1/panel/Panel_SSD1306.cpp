@@ -267,7 +267,7 @@ namespace lgfx
   {
     _compins = data;
     if (_buf)
-    { /// 初期化済みの場合はここでコマンド送信する;
+    { /// If already initialized, send the command here;
       startWrite();
       _bus->writeCommand(CMD_SETCOMPINS | data << 8, 16);
       endWrite();
@@ -390,7 +390,7 @@ namespace lgfx
     }
     if (_range_mod.empty()) { return; }
 
-    // xeの位置を2ライン単位の位置にしないと次の描画位置がずれる事があったため調整
+    // Adjust xe position to a 2-line boundary to prevent the next drawing position from being misaligned
     uint_fast8_t xs = _range_mod.left     ;
     uint_fast8_t xe = (_range_mod.right+2) & ~1;
     uint_fast8_t ys = _range_mod.top    >> 3;

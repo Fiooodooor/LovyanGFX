@@ -135,7 +135,7 @@ namespace lgfx
         res = lgfx::Touch_FT5x06::getTouchRaw(tp, count);
         if (res == 0)
         { /// clear INT.
-          // レジスタ 0x00を読み出すとPort0のINTがクリアされ、レジスタ 0x01を読み出すとPort1のINTがクリアされる。
+          // Reading register 0x00 clears the INT for Port0, and reading register 0x01 clears the INT for Port1.
           lgfx::i2c::readRegister8(i2c_port, aw9523_i2c_addr, 0x00, i2c_freq);
           lgfx::i2c::readRegister8(i2c_port, aw9523_i2c_addr, 0x01, i2c_freq);
         }
@@ -229,12 +229,12 @@ namespace lgfx
 
   struct Light_TWatch : public lgfx::Light_PWM
   {
-    /// TTGO T-Watchはモデルチェンジでバックライトの仕様が何度か変更されている。;
+    /// The TTGO T-Watch has had its backlight specifications changed several times across model revisions.;
     /// 2019    : GPIO12
     /// 2020 v1 : GPIO12 & AXP202 LDO2
     /// 2020 v2 : GPIO25 & AXP202 LDO2
     /// 2020 v3 : GPIO15 & AXP202 LDO2
-    /// これらに対応するため、GPIO12をPWM制御しつつ、AXP202のLDO2も併せて制御する方式とする。;
+    /// To support these variations, GPIO12 is PWM-controlled while also controlling AXP202's LDO2.;
 
     static constexpr int32_t axp_i2c_freq = 400000;
     static constexpr int_fast16_t axp_i2c_addr = 0x35;  // axp202 addr
@@ -570,13 +570,13 @@ namespace lgfx
   {
     struct _detector_result_t
     {
-      // 検出されたパネル
+      // Detected panel
       Panel_Device* panel;
 
-      // 検出されたバス
+      // Detected bus
       IBus* bus;
 
-      // 検出されたボード
+      // Detected board
       board_t board;
     };
 
@@ -674,7 +674,7 @@ namespace lgfx
         } while (lgfx::millis() - time < 10);
       }
 
-      /// TF card dummy clock送信 ;
+      /// Send TF card dummy clock ;
       static void _send_sd_dummy_clock(int spi_host, int_fast16_t pin_cs)
       {
         static constexpr uint32_t dummy_clock[] = { ~0u, ~0u, ~0u, ~0u };
@@ -683,7 +683,7 @@ namespace lgfx
         _pin_level(pin_cs, false);
       }
 
-      /// TF card をSPIモードに移行する ;
+      /// Switch TF card to SPI mode ;
       static void _set_sd_spimode(int spi_host, int_fast16_t pin_cs)
       {
         lgfx::spi::beginTransaction(spi_host, 400000, 0);
@@ -841,9 +841,9 @@ namespace lgfx
         bus_cfg.freq_read   = 8000000;
         bus_cfg.use_lock    = true;
 
-// パネル検出時点ではDMAを使用しない設定にしておく。
-// これはバスをリリースしてもDPORT_SPI_DMA_CHAN_SEL_REGの値がクリアされず、
-// 次回DMA設定時に動作に支障が出ることがあるため。
+// Do not use DMA during panel detection.
+// This is because the DPORT_SPI_DMA_CHAN_SEL_REG value is not cleared even after releasing the bus,
+// which can cause issues during the next DMA configuration.
         bus_cfg.dma_channel = 0;
         bus_cfg.spi_host    = spi_host;
         bus_cfg.pin_mosi    = pin_mosi;
@@ -1045,7 +1045,7 @@ namespace lgfx
         //ESP_LOGI(LIBRARY_NAME,"autodetect board:%d", board);
       } while (board_t::board_unknown == board && --retry >= 0);
       _board = board;
-      /// autodetectの際にreset済みなのでここではuse_resetをfalseで呼び出す。
+      /// Since reset was already performed during autodetect, call with use_reset set to false here.
       bool res = LGFX_Device::init_impl(false, use_clear);
 
       if (nvs_board != board) {
@@ -1213,8 +1213,8 @@ namespace lgfx
           {
             auto cfg = p->config();
             cfg.offset_rotation = 1;
-            p->config(cfg);    // config設定;
-            p->setRotation(1); // config設定後に向きを設定;
+            p->config(cfg);    // Apply config;
+            p->setRotation(1); // Set orientation after config;
             p->light(_create_pwm_backlight(GPIO_NUM_45, 0, 12000));
           }
 
@@ -1304,8 +1304,8 @@ namespace lgfx
           {
             auto cfg = p->config();
             cfg.offset_rotation = 1;
-            p->config(cfg);    // config設定;
-            p->setRotation(1); // config設定後に向きを設定;
+            p->config(cfg);    // Apply config;
+            p->setRotation(1); // Set orientation after config;
             p->light(_create_pwm_backlight(GPIO_NUM_47, 0, 12000));
           }
 
@@ -1998,7 +1998,7 @@ namespace lgfx
 
         bool detect(_detector_result_t* result, bool use_reset) const override
         {
-          // ESPがスリープしていると検出に失敗するため、リセットは必須とする;
+          // Detection fails if the ESP is sleeping, so reset is mandatory;
           return _detector_spi_t::detect(result, true);
         }
 
@@ -2184,7 +2184,7 @@ namespace lgfx
         {
           ESP_LOGI(LIBRARY_NAME, "[Autodetect] M5Station");
 
-          // M5StationのLCDはM5StickCPlusと同じ;
+          // M5Station's LCD is the same as M5StickCPlus;
           auto p = new Panel_M5StickCPlus();
           result->panel = p;
           {
@@ -2192,7 +2192,7 @@ namespace lgfx
             // cfg.pin_rst = GPIO_NUM_15;
             // p->config(cfg);
             p->setRotation(1);
-            // M5StationのバックライトはM5Toughと同じ;
+            // M5Station's backlight is the same as M5Tough;
             p->light(new Light_M5Tough());
           }
         }
@@ -2323,11 +2323,11 @@ namespace lgfx
           auto p = new Panel_M5StackCore2();
           result->panel = p;
           ITouch* t;
-          // Tough のタッチコントローラ有無をチェックする;
-          // Core2/Tough 判別条件としてCore2のTP(0x38)の有無を用いた場合、以下の問題が生じる;
-          // ・Core2のTPがスリープしている場合は反応が得られない;
-          // ・ToughにGoPlus2を組み合わせると0x38に反応がある;
-          // 上記のことから、ここではToughのTP(0x2E)の有無によって判定する;
+          // Check for the presence of Tough's touch controller;
+          // If the presence of Core2's TP (0x38) is used as the Core2/Tough distinction condition, the following issues arise;
+          // - No response is obtained when Core2's TP is sleeping;
+          // - When GoPlus2 is combined with Tough, there is a response at 0x38;
+          // Therefore, the determination here is based on the presence of Tough's TP (0x2E);
           if ( lgfx::i2c::readRegister8(axp_i2c_port, 0x2E, 0, 400000).has_value()) // 0x2E:M5Tough TOUCH
           {
             ESP_LOGI(LIBRARY_NAME, "[Autodetect] M5Tough");
@@ -2353,8 +2353,8 @@ namespace lgfx
             cfg.y_max = 279;
             t->config(cfg);
             p->touch(t);
-            // Touch 登録時に計算される標準変換式を上書きする;
-            // 標準式では表示領域外の仮想ボタンの高さ分だけずれてしまう;
+            // Override the standard conversion formula calculated during touch registration;
+            // The standard formula shifts by the height of the virtual buttons outside the display area;
             float affine[6] = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
             p->setCalibrateAffine(affine);
           }
@@ -2410,7 +2410,7 @@ namespace lgfx
     /// 2020 v1 : GPIO12 & AXP202 LDO2
     /// 2020 v2 : GPIO25 & AXP202 LDO2
     /// 2020 v3 : GPIO15 & AXP202 LDO2
-    // 年式によってバックライト用のGPIOが異なるので一通りHIGHに設定しておく
+    // The backlight GPIO differs by model year, so set all of them HIGH
           _pin_level(GPIO_NUM_15, true);
           _pin_level(GPIO_NUM_25, true);
 
@@ -2668,7 +2668,7 @@ namespace lgfx
         constexpr _detector_M5Paper_t(void)
         : _detector_spi_t
         { board_t::board_M5Paper
-        , 0,0,0 // IT8951 独自判定ルールのため無設定;
+        , 0,0,0 // IT8951 uses its own detection rules, so no settings here;
         , 40000000, 20000000
         , GPIO_NUM_12     // MOSI
         , GPIO_NUM_13     // MISO
@@ -2816,8 +2816,8 @@ namespace lgfx
 
         bool detect(_detector_result_t* result, bool use_reset) const override
         {
-          // ESP32_2432S028 とSPIピンやパネル種類に共通点が多く誤判定しやすい。
-          // そこで ESP32_2432S028 のD/CピンであるGPIO2をHIGHにすることで誤判定を防止する
+          // Shares many SPI pins and panel types with ESP32_2432S028, making false detection likely.
+          // Setting GPIO2 (the D/C pin of ESP32_2432S028) HIGH prevents false detection
           _pin_backup_t backup = { GPIO_NUM_2 };
           _pin_level(GPIO_NUM_2, true);
           bool res = _detector_spi_t::detect(result, use_reset);
@@ -3080,8 +3080,8 @@ namespace lgfx
 
         bool detect(_detector_result_t* result, bool use_reset) const override
         {
-          // Makerfabs_TouchCamera とSPIピンやパネル種類に共通点が多く誤判定しやすい。
-          // そこで Makerfabs_TouchCamera のD/CピンであるGPIO33をHIGHにすることで誤判定を防止する
+          // Shares many SPI pins and panel types with Makerfabs_TouchCamera, making false detection likely.
+          // Setting GPIO33 (the D/C pin of Makerfabs_TouchCamera) HIGH prevents false detection
           _pin_backup_t backup = { GPIO_NUM_33 };
           _pin_level(GPIO_NUM_33, true);
           bool res = _detector_spi_t::detect(result, use_reset);
@@ -3269,10 +3269,10 @@ namespace lgfx
 
         bool judgement(IBus* bus, int pin_cs_) const override
         {
-          // タッチパネルの有無をチェックする;
+          // Check for the presence of a touch panel;
           _pin_backup_t backup[] = { GPIO_NUM_18, GPIO_NUM_19 };
           lgfx::i2c::init(I2C_NUM_1, GPIO_NUM_18, GPIO_NUM_19);
-          // I2C通信でタッチパネルコントローラが存在するかチェックする
+          // Check via I2C communication whether the touch panel controller exists
           if (0x11 == lgfx::i2c::readRegister8(I2C_NUM_1, 0x38, 0xA8, 400000))
           { /// FocalTech's Panel ID reg=0xA8  value=0x11
             return true;
@@ -3549,13 +3549,13 @@ namespace lgfx
         &detector_ODROID_GO,
 #endif
 
-  // WT32_SC01 は読出しが出来ない製品だがタッチパネルの有無で判定する。;
-  // LGFX_AUTO_DETECTでは機能しないようにしておく。;
+  // WT32_SC01 is a product that cannot be read from, but is identified by the presence of a touch panel.;
+  // It is configured to not function with LGFX_AUTO_DETECT.;
 #if defined ( LGFX_WT32_SC01 )
         &detector_WT32_SC01,
 #endif
-  // DSTIKE D-Duino32XS については読出しが出来ないため無条件設定となる。;
-  // そのためLGFX_AUTO_DETECTでは機能しないようにしておく。;
+  // DSTIKE D-Duino32XS cannot be read from, so it uses unconditional configuration.;
+  // Therefore, it is configured to not function with LGFX_AUTO_DETECT.;
 #if defined ( LGFX_DDUINO32_XS )
         &detector_DDUINO32_X,
 #endif

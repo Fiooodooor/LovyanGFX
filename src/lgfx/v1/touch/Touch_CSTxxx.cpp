@@ -58,13 +58,13 @@ namespace lgfx
     _inited = _write_reg(0x00, 0x00)
           && _read_reg(CST816S_CHIPID_REG, tmp, 3);
 
-// CST816SのINT機能には問題があり、LOWパルス出力期間中のタッチ精度が顕著に劣化する。
-// 0xFAレジスタを0x40とすると接触中に定期的にINTパルスを発生できる。
-// また、0xEDを操作するとパルスの長さを変更できるが、これらを併用するとタッチ性能が顕著に劣化する。
-//  _write_reg(0xFA, 0x40); // 0x40 = 触れている間、連続的にINTパルスを発生する。
+// The INT function of the CST816S has issues, and touch accuracy degrades noticeably during LOW pulse output.
+// Setting register 0xFA to 0x40 can generate periodic INT pulses while touching.
+// Additionally, manipulating 0xED can change the pulse length, but using both together causes noticeable touch performance degradation.
+//  _write_reg(0xFA, 0x40); // 0x40 = Generate INT pulses continuously while touching.
 
-    _write_reg(0xFA, 0x20); // 0x20 = 変化を検出したときINTパルスを発生する。
-    _write_reg(0xED, 20); // INT LOW パルス長さ 20 == 2 msec
+    _write_reg(0xFA, 0x20); // 0x20 = Generate an INT pulse when a change is detected.
+    _write_reg(0xED, 20); // INT LOW pulse length 20 == 2 msec
 // ESP_LOGV("LGFX","CST816S id:%02x %02x %02x", tmp[0], tmp[1], tmp[2]);
     return _inited;
   }
@@ -84,15 +84,15 @@ namespace lgfx
     }
 
     if (_cfg.pin_int >= 0)
-    { // intピンのプルアップ処理を行うが、「触れている間 LOW」の設定方法がないため使用していない。
-      // GPIO割込みを使用すれば良いが、Arduinoに依存せず解決する必要があるため、対応を保留する。
+    { // Pull-up processing is performed on the INT pin, but it is not used because there is no way to set "LOW while touching".
+      // Using GPIO interrupts would be ideal, but since it needs to be resolved without depending on Arduino, support is deferred.
       lgfx::pinMode(_cfg.pin_int, pin_mode_t::input_pullup);
     }
     lgfx::i2c::init(_cfg.i2c_port, _cfg.pin_sda, _cfg.pin_scl).has_value();
 
-    // 画面に触れていない時、I2C通信でCST816が見つからない事がある。
-    // CST816S は恐らく省電力モード中はI2Cでの通信に応答しないものと思われる。
-    // 通信の成否による初期化の成否の判定ができないため、ひとまず true を返す。
+    // When the screen is not being touched, the CST816 may not be found via I2C communication.
+    // The CST816S likely does not respond to I2C communication while in power-saving mode.
+    // Since initialization success cannot be determined by communication success, return true for now.
     return true;
   }
 
@@ -146,7 +146,7 @@ namespace lgfx
     int retry = 3;
     do
     {
-      // I2Cでの応答が得られない場合は触れていないものとして扱う。
+      // If no I2C response is received, treat it as not being touched.
       if (!_read_reg(0x02, readdata, 6))
       {
         count = 0;

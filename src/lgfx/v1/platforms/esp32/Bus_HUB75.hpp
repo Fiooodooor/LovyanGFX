@@ -97,10 +97,10 @@ namespace lgfx
         initialize_mode_t initialize_mode;
       };
 
-      // LEDドライバFM6124の輝度レジスタ設定値 (指定可能な範囲 : 0 ~ 15 )
+      // LED driver FM6124 brightness register setting value (valid range: 0 ~ 15)
    // uint8_t fm6124_brightness = 12;
 
-      // LEDドライバに対する輝度レジスタ設定値 (0~255)
+      // LED driver brightness register setting value (0~255)
       uint8_t driver_brightness = 192;
 
       union
@@ -142,7 +142,7 @@ namespace lgfx
 
     void setImageBuffer(void* buffer, color_depth_t depth) override;
 
-    // 1秒間の表示更新回数 (この値に基づいて送信クロックが自動計算される)
+    // Display refresh rate per second (the transmission clock is automatically calculated based on this value)
     void setRefreshRate(uint16_t refresh_rate);
 
     void switch_gpio_control(bool switch_to_dma);

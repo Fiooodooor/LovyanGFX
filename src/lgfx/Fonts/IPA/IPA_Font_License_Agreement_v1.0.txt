@@ -2,64 +2,64 @@
 IPA Font License Agreement v1.0 <Japanese/English>
 --------------------------------------------------
 
-IPAフォントライセンスv1.0
+IPA Font License v1.0
 
-許諾者は、この使用許諾（以下「本契約」といいます。）に定める条件の下で、許諾プログラム（1条に定義するところによります。）を提供します。受領者（1条に定義するところによります。）が、許諾プログラムを使用し、複製し、または頒布する行為、その他、本契約に定める権利の利用を行った場合、受領者は本契約に同意したものと見なします。
+The Licensor provides the Licensed Program (as defined in Article 1) under the conditions set forth in this license agreement (hereinafter referred to as "this Agreement"). When the Recipient (as defined in Article 1) uses, reproduces, or distributes the Licensed Program, or otherwise exercises the rights set forth in this Agreement, the Recipient shall be deemed to have agreed to this Agreement.
 
 
-第1条　用語の定義
+Article 1: Definitions
 
-本契約において、次の各号に掲げる用語は、当該各号に定めるところによります。
+In this Agreement, the terms listed in the following items shall have the meanings set forth in the respective items.
 
-1.「デジタル･フォント･プログラム」とは、フォントを含み、レンダリングしまたは表示するために用いられるコンピュータ・プログラムをいいます。
-2.「許諾プログラム」とは、許諾者が本契約の下で許諾するデジタル･フォント･プログラムをいいます。
-3.「派生プログラム」とは、許諾プログラムの一部または全部を、改変し、加除修正等し、入れ替え、その他翻案したデジタル･フォント･プログラムをいい、許諾プログラムの一部もしくは全部から文字情報を取り出し、またはデジタル･ドキュメント･ファイルからエンベッドされたフォントを取り出し、取り出された文字情報をそのまま、または改変をなして新たなデジタル・フォント・プログラムとして製作されたものを含みます。
-4.「デジタル・コンテンツ」とは、デジタル・データ形式によってエンド・ユーザに提供される制作物のことをいい、動画・静止画等の映像コンテンツおよびテレビ番組等の放送コンテンツ、ならびに文字テキスト、画像、図形等を含んで構成された制作物を含みます。
-5.「デジタル・ドキュメント・ファイル」とは、PDFファイルその他、各種ソフトウェア･プログラムによって製作されたデジタル・コンテンツであって、その中にフォントを表示するために許諾プログラムの全部または一部が埋め込まれた（エンベッドされた）ものをいいます。フォントが「エンベッドされた」とは、当該フォントが埋め込まれた特定の「デジタル・ドキュメント・ファイル」においてのみ表示されるために使用されている状態を指し、その特定の「デジタル・ドキュメント・ファイル」以外でフォントを表示するために使用できるデジタル・フォント・プログラムに含まれている場合と区別されます。
-6.「コンピュータ｣とは、本契約においては、サーバを含みます。
-7.「複製その他の利用」とは、複製、譲渡、頒布、貸与、公衆送信、上映、展示、翻案その他の利用をいいます。
-8.「受領者」とは、許諾プログラムを本契約の下で受領した人をいい、受領者から許諾プログラムを受領した人を含みます。
+1. "Digital Font Program" means a computer program that contains fonts and is used to render or display them.
+2. "Licensed Program" means a Digital Font Program licensed by the Licensor under this Agreement.
+3. "Derived Program" means a Digital Font Program created by modifying, adding to, deleting from, replacing, or otherwise adapting part or all of the Licensed Program, including programs created by extracting character information from part or all of the Licensed Program or extracting Embedded Fonts from Digital Document Files, and creating a new Digital Font Program from the extracted character information, with or without modification.
+4. "Digital Content" means works provided to end users in digital data format, including video content such as motion pictures and still images, broadcasting content such as television programs, and works composed of character text, images, graphics, and the like.
+5. "Digital Document File" means a PDF file or other Digital Content created by various software programs, in which all or part of the Licensed Program is embedded for the purpose of displaying fonts ("Embedded Fonts"). "Embedded" means the state in which the font is used only for display within the specific Digital Document File in which it is embedded, and is distinguished from cases where the font is included in a Digital Font Program that can be used to display fonts outside of that specific Digital Document File.
+6. "Computer" includes servers in this Agreement.
+7. "Reproduction and Other Exploitation" means reproduction, transfer, distribution, lending, public transmission, screening, exhibition, adaptation, and other exploitation.
+8. "Recipient" means a person who has received the Licensed Program under this Agreement, including those who have received the Licensed Program from a Recipient.
 
-第２条 使用許諾の付与
+Article 2: Grant of License
 
-許諾者は受領者に対し、本契約の条項に従い、すべての国で、許諾プログラムを使用することを許諾します。ただし、許諾プログラムに存在する一切の権利はすべて許諾者が保有しています。本契約は、本契約で明示的に定められている場合を除き、いかなる意味においても、許諾者が保有する許諾プログラムに関する一切の権利および、いかなる商標、商号、もしくはサービス・マークに関する権利をも受領者に移転するものではありません。
+The Licensor grants the Recipient permission to use the Licensed Program in all countries, subject to the terms of this Agreement. However, all rights existing in the Licensed Program are retained by the Licensor. Except as expressly set forth in this Agreement, this Agreement does not transfer to the Recipient any rights relating to the Licensed Program held by the Licensor, or any rights relating to any trademark, trade name, or service mark.
 
-1.受領者は本契約に定める条件に従い、許諾プログラムを任意の数のコンピュータにインストールし、当該コンピュータで使用することができます。
-2.受領者はコンピュータにインストールされた許諾プログラムをそのまま、または改変を行ったうえで、印刷物およびデジタル・コンテンツにおいて、文字テキスト表現等として使用することができます。
-3.受領者は前項の定めに従い作成した印刷物およびデジタル・コンテンツにつき、その商用・非商用の別、および放送、通信、各種記録メディアなどの媒体の形式を問わず、複製その他の利用をすることができます。
-4.受領者がデジタル・ドキュメント・ファイルからエンベッドされたフォントを取り出して派生プログラムを作成した場合には、かかる派生プログラムは本契約に定める条件に従う必要があります。
-5.許諾プログラムのエンベッドされたフォントがデジタル・ドキュメント・ファイル内のデジタル・コンテンツをレンダリングするためにのみ使用される場合において、受領者が当該デジタル・ドキュメント・ファイルを複製その他の利用をする場合には、受領者はかかる行為に関しては本契約の下ではいかなる義務をも負いません。
-6.受領者は、3条2項の定めに従い、商用・非商用を問わず、許諾プログラムをそのままの状態で改変することなく複製して第三者への譲渡し、公衆送信し、その他の方法で再配布することができます(以下、「再配布」といいます。)。
-7.受領者は、上記の許諾プログラムについて定められた条件と同様の条件に従って、派生プログラムを作成し、使用し、複製し、再配布することができます。ただし、受領者が派生プログラムを再配布する場合には、3条1項の定めに従うものとします。
+1. The Recipient may install the Licensed Program on any number of Computers and use it on those Computers, subject to the conditions set forth in this Agreement.
+2. The Recipient may use the Licensed Program, as is or with modifications, as character text expressions and the like in printed materials and Digital Content.
+3. The Recipient may conduct Reproduction and Other Exploitation of printed materials and Digital Content created in accordance with the preceding item, regardless of whether commercial or non-commercial, and regardless of the format of the medium, including but not limited to broadcasting, communication, and various recording media.
+4. If the Recipient extracts Embedded Fonts from a Digital Document File to create a Derived Program, such Derived Program shall be subject to the conditions set forth in this Agreement.
+5. If the Embedded Fonts of the Licensed Program are used only for rendering Digital Content within a Digital Document File, and the Recipient conducts Reproduction and Other Exploitation of such Digital Document File, the Recipient shall bear no obligations under this Agreement with respect to such actions.
+6. The Recipient may reproduce the Licensed Program without modification in its original state and transfer it to third parties, publicly transmit it, or otherwise redistribute it, whether commercially or non-commercially, subject to the provisions of Article 3, Paragraph 2 (hereinafter referred to as "Redistribution").
+7. The Recipient may create, use, reproduce, and Redistribute Derived Programs under the same conditions as those set forth for the Licensed Program above. However, when Redistributing a Derived Program, the Recipient shall comply with the provisions of Article 3, Paragraph 1.
 
-第３条　制限
+Article 3: Restrictions
 
-前条により付与された使用許諾は、以下の制限に服します。
+The license granted in the preceding Article shall be subject to the following restrictions.
 
-1.派生プログラムが前条4項及び7項に基づき再配布される場合には、以下の全ての条件を満たさなければなりません。
-　(1)派生プログラムを再配布する際には、下記もまた、当該派生プログラムと一緒に再配布され、オンラインで提供され、または、郵送費・媒体及び取扱手数料の合計を超えない実費と引き換えに媒体を郵送する方法により提供されなければなりません。
-　　(a)派生プログラムの写し; および
-　　(b)派生プログラムを作成する過程でフォント開発プログラムによって作成された追加のファイルであって派生プログラムをさらに加工するにあたって利用できるファイルが存在すれば、当該ファイル
-　(2)派生プログラムの受領者が、派生プログラムを、このライセンスの下で最初にリリースされた許諾プログラム（以下、「オリジナル・プログラム」といいます。）に置き換えることができる方法を再配布するものとします。かかる方法は、オリジナル・ファイルからの差分ファイルの提供、または、派生プログラムをオリジナル・プログラムに置き換える方法を示す指示の提供などが考えられます。
-　(3)派生プログラムを、本契約書に定められた条件の下でライセンスしなければなりません。
-　(4)派生プログラムのプログラム名、フォント名またはファイル名として、許諾プログラムが用いているのと同一の名称、またはこれを含む名称を使用してはなりません。
-　(5)本項の要件を満たすためにオンラインで提供し、または媒体を郵送する方法で提供されるものは、その提供を希望するいかなる者によっても提供が可能です。
-2.受領者が前条6項に基づき許諾プログラムを再配布する場合には、以下の全ての条件を満たさなければなりません。
-　(1)許諾プログラムの名称を変更してはなりません。
-　(2)許諾プログラムに加工その他の改変を加えてはなりません。
-　(3)本契約の写しを許諾プログラムに添付しなければなりません。
-3.許諾プログラムは、現状有姿で提供されており、許諾プログラムまたは派生プログラムについて、許諾者は一切の明示または黙示の保証（権利の所在、非侵害、商品性、特定目的への適合性を含むがこれに限られません）を行いません。いかなる場合にも、その原因を問わず、契約上の責任か厳格責任か過失その他の不法行為責任かにかかわらず、また事前に通知されたか否かにかかわらず、許諾者は、許諾プログラムまたは派生プログラムのインストール、使用、複製その他の利用または本契約上の権利の行使によって生じた一切の損害（直接・間接・付随的・特別・拡大・懲罰的または結果的損害）（商品またはサービスの代替品の調達、システム障害から生じた損害、現存するデータまたはプログラムの紛失または破損、逸失利益を含むがこれに限られません）について責任を負いません。
-4.許諾プログラムまたは派生プログラムのインストール、使用、複製その他の利用に関して、許諾者は技術的な質問や問い合わせ等に対する対応その他、いかなるユーザ・サポートをも行う義務を負いません。
+1. When a Derived Program is Redistributed pursuant to Paragraphs 4 and 7 of the preceding Article, all of the following conditions must be met:
+  (1) When Redistributing a Derived Program, the following must also be Redistributed together with the Derived Program, made available online, or provided by mailing a medium in exchange for actual costs not exceeding the total of postage, medium, and handling fees:
+    (a) A copy of the Derived Program; and
+    (b) Any additional files created by the font development program in the process of creating the Derived Program that can be used to further modify the Derived Program, if such files exist.
+  (2) The Redistribution shall include a means by which the Recipient of the Derived Program can replace the Derived Program with the Licensed Program first released under this License (hereinafter referred to as the "Original Program"). Such means may include providing a difference file from the Original Program, or providing instructions on how to replace the Derived Program with the Original Program.
+  (3) The Derived Program must be licensed under the conditions set forth in this Agreement.
+  (4) The name of the Licensed Program, or a name containing it, shall not be used as the program name, font name, or file name of the Derived Program.
+  (5) Any material to be made available online or by mailing a medium to satisfy the requirements of this paragraph may be provided by any party wishing to do so.
+2. When the Recipient Redistributes the Licensed Program pursuant to Paragraph 6 of the preceding Article, all of the following conditions must be met:
+  (1) The name of the Licensed Program shall not be changed.
+  (2) The Licensed Program shall not be processed or otherwise modified.
+  (3) A copy of this Agreement must be attached to the Licensed Program.
+3. The Licensed Program is provided "as is," and the Licensor makes no express or implied warranties regarding the Licensed Program or any Derived Program (including but not limited to warranties of title, non-infringement, merchantability, or fitness for a particular purpose). In no event shall the Licensor be liable for any damages (direct, indirect, incidental, special, extended, punitive, or consequential damages), regardless of the cause, whether under contract, strict liability, or tort (including negligence), and regardless of whether or not prior notice was given, arising from the installation, use, Reproduction and Other Exploitation of the Licensed Program or Derived Program, or the exercise of rights under this Agreement (including but not limited to procurement of substitute goods or services, damages arising from system failure, loss or corruption of existing data or programs, and lost profits).
+4. The Licensor shall have no obligation to respond to any technical questions or inquiries, or to provide any other user support, in connection with the installation, use, Reproduction and Other Exploitation of the Licensed Program or Derived Programs.
 
-第４条　契約の終了
+Article 4: Termination of Agreement
 
-1.本契約の有効期間は、受領者が許諾プログラムを受領した時に開始し、受領者が許諾プログラムを何らかの方法で保持する限り続くものとします。
-2.前項の定めにかかわらず、受領者が本契約に定める各条項に違反したときは、本契約は、何らの催告を要することなく、自動的に終了し、当該受領者はそれ以後、許諾プログラムおよび派生プログラムを一切使用しまたは複製その他の利用をすることができないものとします。ただし、かかる契約の終了は、当該違反した受領者から許諾プログラムまたは派生プログラムの配布を受けた受領者の権利に影響を及ぼすものではありません。
+1. This Agreement shall take effect when the Recipient receives the Licensed Program and shall continue as long as the Recipient retains the Licensed Program in any manner.
+2. Notwithstanding the preceding paragraph, if the Recipient violates any provision of this Agreement, this Agreement shall automatically terminate without any notice, and the Recipient shall thereafter be unable to use, reproduce, or otherwise exploit the Licensed Program or any Derived Program. However, such termination shall not affect the rights of Recipients who received the Licensed Program or Derived Programs from the Recipient who violated the Agreement.
 
-第５条　準拠法
+Article 5: Governing Law
 
-1.IPAは、本契約の変更バージョンまたは新しいバージョンを公表することができます。その場合には、受領者は、許諾プログラムまたは派生プログラムの使用、複製その他の利用または再配布にあたり、本契約または変更後の契約のいずれかを選択することができます。その他、上記に記載されていない条項に関しては日本の著作権法および関連法規に従うものとします。
-2.本契約は、日本法に基づき解釈されます。
+1. IPA may publish revised or new versions of this Agreement. In such cases, the Recipient may choose either this Agreement or the revised Agreement when using, Reproducing and Otherwise Exploiting, or Redistributing the Licensed Program or Derived Programs. Other matters not specified above shall be subject to the Copyright Law of Japan and related laws and regulations.
+2. This Agreement shall be interpreted under Japanese law.
 
 
 ----------
@@ -93,17 +93,17 @@ Article 3 (Restriction)
 The license granted in the preceding Article shall be subject to the following restrictions:
 
 1.If a Derived Program is Redistributed pursuant to Paragraph 4 and 7 of the preceding Article, the following conditions must be met :
-　(1)The following must be also Redistributed together with the Derived Program, or be made available online or by means of mailing mechanisms in exchange for a cost which does not exceed the total costs of postage, storage medium and handling fees:
-　　(a)a copy of the Derived Program; and
-　　(b)any additional file created by the font developing program in the course of creating the Derived Program that can be used for further modification of the Derived Program, if any. 
-　(2)It is required to also Redistribute means to enable recipients of the Derived Program to replace the Derived Program with the Licensed Program first released under this License (the “Original Program”).  Such means may be to provide a difference file from the Original Program, or instructions setting out a method to replace the Derived Program with the Original Program. 
-　(3)The Recipient must license the Derived Program under the terms and conditions of this Agreement.
-　(4)No one may use or include the name of the Licensed Program as a program name, font name or file name of the Derived Program. 
-　(5)Any material to be made available online or by means of mailing a medium to satisfy the requirements of this paragraph may be provided, verbatim, by any party wishing to do so.
+ (1)The following must be also Redistributed together with the Derived Program, or be made available online or by means of mailing mechanisms in exchange for a cost which does not exceed the total costs of postage, storage medium and handling fees:
+  (a)a copy of the Derived Program; and
+  (b)any additional file created by the font developing program in the course of creating the Derived Program that can be used for further modification of the Derived Program, if any. 
+ (2)It is required to also Redistribute means to enable recipients of the Derived Program to replace the Derived Program with the Licensed Program first released under this License (the “Original Program”).  Such means may be to provide a difference file from the Original Program, or instructions setting out a method to replace the Derived Program with the Original Program. 
+ (3)The Recipient must license the Derived Program under the terms and conditions of this Agreement.
+ (4)No one may use or include the name of the Licensed Program as a program name, font name or file name of the Derived Program. 
+ (5)Any material to be made available online or by means of mailing a medium to satisfy the requirements of this paragraph may be provided, verbatim, by any party wishing to do so.
 2.If the Recipient Redistributes the Licensed Program pursuant to Paragraph 6 of the preceding Article, the Recipient shall meet all of the following conditions:
-　(1)The Recipient may not change the name of the Licensed Program.
-　(2)The Recipient may not alter or otherwise modify the Licensed Program.
-　(3)The Recipient must attach a copy of this Agreement to the Licensed Program.
+ (1)The Recipient may not change the name of the Licensed Program.
+ (2)The Recipient may not alter or otherwise modify the Licensed Program.
+ (3)The Recipient must attach a copy of this Agreement to the Licensed Program.
 3.THIS LICENSED PROGRAM IS PROVIDED BY THE LICENSOR “AS IS” AND ANY EXPRESSED OR IMPLIED WARRANTY AS TO THE LICENSED PROGRAM OR ANY DERIVED PROGRAM, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE, ARE DISCLAIMED.  IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXTENDED, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO; PROCUREMENT OF SUBSTITUTED GOODS OR SERVICE; DAMAGES ARISING FROM SYSTEM FAILURE; LOSS OR CORRUPTION OF EXISTING DATA OR PROGRAM; LOST PROFITS), HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE INSTALLATION, USE, THE REPRODUCTION OR OTHER EXPLOITATION OF THE LICENSED PROGRAM OR ANY DERIVED PROGRAM OR THE EXERCISE OF ANY RIGHTS GRANTED HEREUNDER, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 4.The Licensor is under no obligation to respond to any technical questions or inquiries, or provide any other user support in connection with the installation, use or the Reproduction and Other Exploitation of the Licensed Program or Derived Programs thereof.
 

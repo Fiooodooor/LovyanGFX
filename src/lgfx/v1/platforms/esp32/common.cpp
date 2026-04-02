@@ -108,7 +108,7 @@ Contributors:
   #endif
 
   #if defined ( LGFX_EFUSE_WORKAROUND )
-// include <esp_efuse.h> でエラーが出るバージョンが存在するため、エラー回避用の記述を行ってからincludeする。;
+// Some versions produce errors with include <esp_efuse.h>, so add error workaround code before including.;
    #define _ROM_SECURE_BOOT_H_
    #define MAX_KEY_DIGESTS 3
    struct ets_secure_boot_key_digests
@@ -138,7 +138,7 @@ Contributors:
  #elif __has_include(<soc/axi_dma_struct.h>) // ESP32P4
   #include <soc/axi_dma_struct.h>
  #endif
- // レジスタに異なる定義名がついているため、ここで統一;
+ // Registers have different definition names, so unify them here;
  #if defined AXI_DMA_OUT_PERI_SEL_CH0_REG
   #define DMA_OUT_PERI_SEL_CH0_REG  AXI_DMA_OUT_PERI_SEL_CH0_REG
   #define DMA_IN_PERI_SEL_CH0_REG  AXI_DMA_IN_PERI_SEL_CH0_REG
@@ -274,7 +274,7 @@ namespace lgfx
     // ESP32S3: SPI2==0 / SPI3==1
     // SOC_GDMA_TRIG_PERIPH_SPI3
     // SOC_GDMA_TRIG_PERIPH_LCD0
-    // GDMAペリフェラルレジスタの配列を順に調べてペリフェラル番号が一致するDMAチャンネルを特定する;
+    // Iterate through the GDMA peripheral register array to find the DMA channel matching the peripheral number;
     for (int i = 0; i < SOC_GDMA_PAIRS_PER_GROUP_MAX; ++i)
     {
 #if defined AXI_DMA_OUT_PERI_SEL_CH0_REG
@@ -300,7 +300,7 @@ namespace lgfx
     // ESP32S3: SPI2==0 / SPI3==1
     // SOC_GDMA_TRIG_PERIPH_SPI3
     // SOC_GDMA_TRIG_PERIPH_LCD0
-    // GDMAペリフェラルレジスタの配列を順に調べてペリフェラル番号が一致するDMAチャンネルを特定する;
+    // Iterate through the GDMA peripheral register array to find the DMA channel matching the peripheral number;
     for (int i = 0; i < SOC_GDMA_PAIRS_PER_GROUP_MAX; ++i)
     {
 #if defined AXI_DMA_OUT_PERI_SEL_CH0_REG
@@ -337,8 +337,8 @@ namespace lgfx
     auto gpio_num = (gpio_num_t)pin;
     if ((size_t)gpio_num >= GPIO_NUM_MAX) return;
 
-    /// GPIO OUTPUT enの場合はGPIO_ENABLE_W1TS, disの場合はGPIO_ENABLE_W1TCの該当ビットを立てる。
-    /// レジスタのアドレスをテーブル化しておき、演算で対象レジスタを切り替える。
+    /// For GPIO OUTPUT enable, set the corresponding bit in GPIO_ENABLE_W1TS; for disable, set the bit in GPIO_ENABLE_W1TC.
+    /// Register addresses are stored in a table and the target register is selected by calculation.
     static constexpr volatile uint32_t* gpio_en_regs[] =
     {
       (volatile uint32_t*)GPIO_ENABLE_W1TC_REG,
@@ -348,7 +348,7 @@ namespace lgfx
       (volatile uint32_t*)GPIO_ENABLE1_W1TS_REG,
 #endif
     };
-    /// pin番号が32未満かどうかで分岐する。 bit0は OUTPUT en。
+    /// Branch based on whether the pin number is less than 32. bit0 is OUTPUT enable.
     // auto gpio_en_reg = gpio_en_regs[((pin >> 5) << 1) + (mode == pin_mode_t::output ? 1 : 0)];
 
     auto io_mux_reg = (volatile uint32_t*)(GPIO_PIN_MUX_REG[pin]);
@@ -559,7 +559,7 @@ namespace lgfx
       (void)spi_port;
 
       if (spi_sclk >= 0) {
-        gpio_lo(spi_sclk); // ここでLOWにしておくことで、pinMode変更によるHIGHパルスが出力されるのを防止する (CSなしパネル対策);
+        gpio_lo(spi_sclk); // Set LOW here to prevent HIGH pulses from being output due to pinMode changes (workaround for panels without CS);
       }
 #if defined (ARDUINO) && __has_include (<SPI.h>) // Arduino ESP32
       if (spi_host == default_spi_host)
@@ -580,7 +580,7 @@ namespace lgfx
 
 #endif
 
- // バスの設定にはESP-IDFのSPIドライバを使用する。;
+ // Use ESP-IDF SPI driver for bus configuration.;
       if (_spi_dev_handle[spi_host] == nullptr)
       {
         spi_bus_config_t buscfg;
@@ -646,10 +646,10 @@ namespace lgfx
       (void)spi_port;
 
       if (spi_sclk >= 0) {
-        gpio_lo(spi_sclk); // ここでLOWにしておくことで、pinMode変更によるHIGHパルスが出力されるのを防止する (CSなしパネル対策);
+        gpio_lo(spi_sclk); // Set LOW here to prevent HIGH pulses from being output due to pinMode changes (workaround for panels without CS);
       }
 
-      // バスの設定にはESP-IDFのSPIドライバを使用する。;
+      // Use ESP-IDF SPI driver for bus configuration.;
       if (_spi_dev_handle[spi_host] == nullptr)
       {
 
@@ -1122,7 +1122,7 @@ namespace lgfx
       uint32_t cmd_val = byte_num
                             | (( op_code == i2c_cmd_write
                               || op_code == i2c_cmd_stop)
-                              ? 0x100 : 0)  // writeおよびstop時はACK_ENを有効にする;
+                              ? 0x100 : 0)  // Enable ACK_EN during write and stop;
                             | op_code << 11 ;
       if (flg_nack && op_code == i2c_cmd_read) {
         cmd_val |= (1 << 10); // ACK_VALUE (set NACK)
@@ -1156,7 +1156,7 @@ namespace lgfx
       gpio_set_direction(scl_io, GPIO_MODE_OUTPUT_OD);
       delayMicroseconds(I2C_CLR_BUS_HALF_PERIOD_US);
 
-      // SDAがHIGHになるまでSTOP送出を繰り返す。;
+      // Repeat sending STOP until SDA becomes HIGH.;
       int i = 0;
       do
       {
@@ -1171,7 +1171,7 @@ namespace lgfx
       } while (!gpio_get_level(sda_io) && (i++ < I2C_CLR_BUS_SCL_NUM));
 
 #if !defined (CONFIG_IDF_TARGET_ESP32C3)
-/// ESP32C3で periph_module_reset を使用すると以後通信不能になる問題が起きたため分岐;
+/// Using periph_module_reset on ESP32C3 causes communication to become impossible afterwards, so branch here;
       i2c_periph_reset(i2c_port);
 #endif
       for (auto &bup : backup_pins) { bup.restore(); }
@@ -1438,17 +1438,17 @@ namespace lgfx
       i2c_set_cmd(dev, 0, i2c_cmd_start, 0);
       i2c_set_cmd(dev, 2, i2c_cmd_end, 0);
       if (i2c_addr <= I2C_7BIT_ADDR_MAX)
-      { // 7bitアドレスの場合;
+      { // For 7-bit address;
         *fifo_addr = i2c_addr << 1 | (read ? I2C_MASTER_READ : I2C_MASTER_WRITE);
         i2c_set_cmd(dev, 1, i2c_cmd_write, 1);
       }
       else
-      { // 10bitアドレスの場合;
+      { // For 10-bit address;
         *fifo_addr = 0xF0 | (i2c_addr>>8)<<1 | I2C_MASTER_WRITE;
         *fifo_addr =         i2c_addr;
         i2c_set_cmd(dev, 1, i2c_cmd_write, 2);
         if (read)
-        { // 10bitアドレスのread要求の場合;
+        { // For 10-bit address read request;
           *fifo_addr = 0xF0 | (i2c_addr>>8)<<1 | I2C_MASTER_READ;
           i2c_set_cmd(dev, 2, i2c_cmd_start, 0);
           i2c_set_cmd(dev, 3, i2c_cmd_read, 1);

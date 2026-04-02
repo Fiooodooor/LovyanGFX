@@ -36,74 +36,74 @@ namespace lgfx
 
     struct config_t
     {
-      /// CS ピン番号;
+      /// CS pin number;
       /// Number of CS pin
       int16_t pin_cs = -1;
 
-      /// RST ピン番号;
+      /// RST pin number;
       /// Number of RST pin
       int16_t pin_rst = -1;
 
-      /// BUSY ピン番号;
+      /// BUSY pin number;
       /// Number of BUSY pin
       int16_t pin_busy = -1;
 
-      /// LCDドライバが扱える画像の最大幅;
+      /// Maximum image width the LCD driver can handle;
       /// The maximum width of an image that the LCD driver can handle.
       uint16_t memory_width = 240;
 
-      /// LCDドライバが扱える画像の最大高さ;
+      /// Maximum image height the LCD driver can handle;
       /// The maximum height of an image that the LCD driver can handle.
       uint16_t memory_height = 240;
 
-      /// 実際に表示できる幅;
+      /// Actual displayable width;
       /// Actual width of the display.
       uint16_t panel_width = 240;
 
-      /// 実際に表示できる高さ;
+      /// Actual displayable height;
       /// Actual height of the display.
       uint16_t panel_height = 240;
 
-      /// パネルのX方向オフセット量;
+      /// Panel X-direction offset;
       /// Number of offset pixels in the X direction.
       uint16_t offset_x = 0;
 
-      /// パネルのY方向オフセット量;
+      /// Panel Y-direction offset;
       /// Number of offset pixels in the Y direction.
       uint16_t offset_y = 0;
 
-      /// 回転方向のオフセット 0~7 (4~7は上下反転);
+      /// Rotation direction offset 0~7 (4~7 is upside down);
       /// Offset value in the direction of rotation. 0~7 (4~7 is upside down)
       uint8_t offset_rotation = 0;
 
-      /// ピクセル読出し前のダミーリードのビット数;
+      /// Number of dummy read bits before pixel readout;
       /// Number of bits in dummy read before pixel readout.
       uint8_t dummy_read_pixel = 8;
 
-      /// データ読出し前のダミーリードのビット数;
+      /// Number of dummy read bits before data readout;
       /// Number of bits in dummy read before data readout.
       uint8_t dummy_read_bits = 1;
 
-      /// データ読出し終了時のウェイト(ST7796で必要);
+      /// Wait time at end of data readout (required for ST7796);
       uint16_t end_read_delay_us = 0;
 
-      /// データ読出しが可能か否か;
+      /// Whether data readout is possible;
       /// Whether the data is readable or not.
       bool readable = true;
 
-      /// 明暗の反転 (IPSパネルはtrueに設定);
+      /// Brightness inversion (set to true for IPS panels);
       /// brightness inversion (e.g. IPS panel)
       bool invert = false;
 
-      /// RGB=true / BGR=false パネルの赤と青が入れ替わってしまう場合 trueに設定;
+      /// RGB=true / BGR=false. Set to true if red and blue are swapped on the panel;
       /// Set the RGB/BGR color order.
       bool rgb_order = false;
 
-      /// 送信データの16bitアライメント データ長を16bit単位で送信するパネルの場合 trueに設定;
+      /// 16-bit alignment of transmitted data. Set to true for panels that send data in 16-bit units;
       /// 16-bit alignment of transmitted data
       bool dlen_16bit = false;
 
-      /// SD等のファイルシステムとのバス共有の有無 (trueに設定するとdrawJpgFile等でバス制御が行われる);
+      /// Whether the bus is shared with a file system such as SD (if set to true, bus control is performed in drawJpgFile etc.);
       /// Whether or not to share the bus with the file system (if set to true, drawJpgFile etc. will control the bus)
       bool bus_shared = true;
     };
@@ -168,27 +168,27 @@ namespace lgfx
 
     float _affine[6] = {1,0,0,0,1,0};  /// touch affine parameter
 
-    /// CSピンの準備処理を行う。CSピンを自前で制御する場合、この関数をoverrideして実装すること。;
+    /// Performs preparation processing for the CS pin.;
     /// Performs preparation processing for the CS pin.
     /// If you want to control the CS pin on your own, override this function and implement it.
     virtual void init_cs(void);
 
-    /// 引数に応じてCSピンを制御する。false=LOW / true=HIGH。CSピンを自前で制御する場合、この関数をoverrideして実装すること。;
+    /// Controls the CS pin according to the argument. false=LOW / true=HIGH.;
     /// Controls the CS pin to go HIGH when the argument is true.
     /// If you want to control the CS pin on your own, override this function and implement it.
     virtual void cs_control(bool level);
 
-    /// RSTピンの準備処理を行う。RSTピンを自前で制御する場合、この関数をoverrideして実装すること。;
+    /// Performs preparation processing for the RST pin.;
     /// Performs preparation processing for the RST pin.
     /// If you want to control the RST pin on your own, override this function and implement it.
     virtual void init_rst(void);
 
-    /// 引数に応じてRSTピンを制御する。false=LOW / true=HIGH。RSTピンを自前で制御する場合、この関数をoverrideして実装すること。;
+    /// Controls the RST pin according to the argument. false=LOW / true=HIGH.;
     /// Controls the RST pin to go HIGH when the argument is true.
     /// If you want to control the RST pin on your own, override this function and implement it.
     virtual void rst_control(bool level);
 
-    /// パネルの初期化コマンド列を得る。無い場合はnullptrを返す。;
+    /// Get the panel initialization command sequence. Returns nullptr if none.;
     /// Get the panel initialization command sequence.
     virtual const uint8_t* getInitCommands(uint8_t listno) const { (void)listno; return nullptr; }
 

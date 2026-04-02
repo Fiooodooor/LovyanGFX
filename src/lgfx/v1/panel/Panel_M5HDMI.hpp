@@ -43,27 +43,27 @@ namespace lgfx
       info_t h;
     };
 
-    // ピクセルクロックの設定用構造体
+    // Structure for pixel clock configuration
     struct video_clock_t
     {
-      // ピクセルクロックの求め方
-      // (入力クロック74.25MHz) * feedback_divider / input_divider = pixel clock (出力クロック)
+      // How to calculate the pixel clock
+      // (input clock 74.25MHz) * feedback_divider / input_divider = pixel clock (output clock)
 
-      // 制約: 値の範囲は 1<= input_divider <= 24 であること
+      // Constraint: value must be in range 1 <= input_divider <= 24
       uint8_t input_divider = 2;
 
-      // 制約: 値の範囲は 1<= feedback_divider <= 64 であること
+      // Constraint: value must be in range 1 <= feedback_divider <= 64
       uint8_t feedback_divider = 2;
 
-      // 制約: output_divider は次のいずれかであること。 2,4,8,16,32, 48, 64, 80, 96, 112, 128
+      // Constraint: output_divider must be one of the following: 2, 4, 8, 16, 32, 48, 64, 80, 96, 112, 128
       uint8_t output_divider = 8;
 
-      // また、 pixel_clock * output_divider = vco_clock
-      // 制約: 400MHz <= vco_clock <= 1200MHz であること。800MHzが理想値。
+      // Also, pixel_clock * output_divider = vco_clock
+      // Constraint: 400MHz <= vco_clock <= 1200MHz. 800MHz is the ideal value.
 
-      // ビデオ処理回路の駆動にピクセルクロックの半分を使うかどうか。デフォルトはfalse
-      // Full HD @ 60Hz (ピクセルクロック = 148.5MHz) の映像信号のみを受け付ける Xreal Airのような機器に対して、
-      // FPGA側ビデオ出力は半分のクロックで動いており、2ピクセルクロック分同じデータを出力していることにして対応するために使う。
+      // Whether to use half the pixel clock to drive the video processing circuit. Default is false
+      // For devices like Xreal Air that only accept Full HD @ 60Hz (pixel clock = 148.5MHz) video signals,
+      // the FPGA video output runs at half the clock, outputting the same data for 2 pixel clocks.
       bool use_half_clock = false;
     };
 
@@ -141,61 +141,61 @@ namespace lgfx
     void setScaling(uint_fast8_t x_scale, uint_fast8_t y_scale);
     void setViewPort(uint_fast16_t x, uint_fast16_t y);
 
-    static constexpr uint8_t CMD_NOP          = 0x00; // 1Byte 何もしない;
-    static constexpr uint8_t CMD_READ_ID      = 0x04; // 1Byte ID読出し  スレーブからの回答は4Byte ([0]=0x48 [1]=0x44 [2]=メジャーバージョン [3]=マイナーバージョン);
+    static constexpr uint8_t CMD_NOP          = 0x00; // 1Byte No operation;
+    static constexpr uint8_t CMD_READ_ID      = 0x04; // 1Byte Read ID. Response from slave is 4Bytes ([0]=0x48 [1]=0x44 [2]=major version [3]=minor version);
 
-    static constexpr uint8_t CMD_SCREEN_SCALING=0x18; // 8Byte 表示倍率設定 [1]=横倍率 [2]=縦倍率 [3~4]=横論理解像度 [5~6]=縦論理解像度 [7]=チェックサム ( ~([0]+[1]+[2]+[3]+[4]+[5]+[6]) );
-    static constexpr uint8_t CMD_SCREEN_ORIGIN= 0x19; // 6Byte 表示起点座標 [1~2]=X座標 [3~4]=Y座標 [5]=チェックサム ( ~([0]+[1]+[2]+[3]+[4]) );
-//  static constexpr uint8_t CMD_INVOFF       = 0x20; // 1Byte 色反転を解除;
-//  static constexpr uint8_t CMD_INVON        = 0x21; // 1Byte 色反転を有効;
+    static constexpr uint8_t CMD_SCREEN_SCALING=0x18; // 8Byte Display scaling setting [1]=horizontal scale [2]=vertical scale [3~4]=horizontal logical resolution [5~6]=vertical logical resolution [7]=checksum ( ~([0]+[1]+[2]+[3]+[4]+[5]+[6]) );
+    static constexpr uint8_t CMD_SCREEN_ORIGIN= 0x19; // 6Byte Display origin coordinates [1~2]=X coordinate [3~4]=Y coordinate [5]=checksum ( ~([0]+[1]+[2]+[3]+[4]) );
+//  static constexpr uint8_t CMD_INVOFF       = 0x20; // 1Byte Disable color inversion;
+//  static constexpr uint8_t CMD_INVON        = 0x21; // 1Byte Enable color inversion;
 
-    static constexpr uint8_t CMD_COPYRECT     = 0x23; //13Byte 矩形範囲コピー [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~10]==DST_X [11~12]==DST_Y
-    static constexpr uint8_t CMD_CASET        = 0x2A; // 5Byte X方向の範囲選択 data[1~2]==XS  data[3~4]==XE
-    static constexpr uint8_t CMD_RASET        = 0x2B; // 5Byte Y方向の範囲選択 data[1~2]==YS  data[3~4]==YE
+    static constexpr uint8_t CMD_COPYRECT     = 0x23; //13Byte Rectangle copy [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~10]==DST_X [11~12]==DST_Y
+    static constexpr uint8_t CMD_CASET        = 0x2A; // 5Byte X-axis range selection data[1~2]==XS  data[3~4]==XE
+    static constexpr uint8_t CMD_RASET        = 0x2B; // 5Byte Y-axis range selection data[1~2]==YS  data[3~4]==YE
 
     static constexpr uint8_t CMD_WRITE_RAW    = 0x40;
-    static constexpr uint8_t CMD_WRITE_RAW_8  = 0x41; // 不定長 RGB332   1Byteのピクセルデータを連続送信;
-    static constexpr uint8_t CMD_WRITE_RAW_16 = 0x42; // 不定長 RGB565   2Byteのピクセルデータを連続送信;
-    static constexpr uint8_t CMD_WRITE_RAW_24 = 0x43; // 不定長 RGB888   3Byteのピクセルデータを連続送信;
-    static constexpr uint8_t CMD_WRITE_RAW_32 = 0x44; // 不定長 ARGB8888 4Byteのピクセルデータを連続送信;
-    static constexpr uint8_t CMD_WRITE_RAW_A  = 0x45; // 不定長 A8       1Byteのピクセルデータを連続送信(アルファチャネルのみ、描画色は最後に使用したものを再利用する);
+    static constexpr uint8_t CMD_WRITE_RAW_8  = 0x41; // Variable length RGB332 Continuously send 1Byte pixel data;
+    static constexpr uint8_t CMD_WRITE_RAW_16 = 0x42; // Variable length RGB565 Continuously send 2Byte pixel data;
+    static constexpr uint8_t CMD_WRITE_RAW_24 = 0x43; // Variable length RGB888 Continuously send 3Byte pixel data;
+    static constexpr uint8_t CMD_WRITE_RAW_32 = 0x44; // Variable length ARGB8888 Continuously send 4Byte pixel data;
+    static constexpr uint8_t CMD_WRITE_RAW_A  = 0x45; // Variable length A8 Continuously send 1Byte pixel data (alpha channel only, drawing color reuses the last used color);
 
 //  static constexpr uint8_t CMD_WRITE_RLE    = 0x48;
-//  static constexpr uint8_t CMD_WRITE_RLE_8  = 0x49; // 不定長 RGB332   1Byteのピクセルデータを連続送信(RLE圧縮);
-//  static constexpr uint8_t CMD_WRITE_RLE_16 = 0x4A; // 不定長 RGB565   2Byteのピクセルデータを連続送信(RLE圧縮);
-//  static constexpr uint8_t CMD_WRITE_RLE_24 = 0x4B; // 不定長 RGB888   3Byteのピクセルデータを連続送信(RLE圧縮);
-//  static constexpr uint8_t CMD_WRITE_RLE_32 = 0x4C; // 不定長 ARGB8888 4Byteのピクセルデータを連続送信(RLE圧縮);
-//  static constexpr uint8_t CMD_WRITE_RLE_A  = 0x4D; // 不定長 A8       1Byteのピクセルデータを連続送信(RLE圧縮 アルファチャネルのみ、描画色は最後に使用したものを再利用する);
+//  static constexpr uint8_t CMD_WRITE_RLE_8  = 0x49; // Variable length RGB332 Continuously send 1Byte pixel data (RLE compressed);
+//  static constexpr uint8_t CMD_WRITE_RLE_16 = 0x4A; // Variable length RGB565 Continuously send 2Byte pixel data (RLE compressed);
+//  static constexpr uint8_t CMD_WRITE_RLE_24 = 0x4B; // Variable length RGB888 Continuously send 3Byte pixel data (RLE compressed);
+//  static constexpr uint8_t CMD_WRITE_RLE_32 = 0x4C; // Variable length ARGB8888 Continuously send 4Byte pixel data (RLE compressed);
+//  static constexpr uint8_t CMD_WRITE_RLE_A  = 0x4D; // Variable length A8 Continuously send 1Byte pixel data (RLE compressed, alpha channel only, drawing color reuses the last used color);
 
-//  static constexpr uint8_t CMD_RAM_FILL     = 0x50; // 1Byte 現在の描画色で選択範囲全塗り;
+//  static constexpr uint8_t CMD_RAM_FILL     = 0x50; // 1Byte Fill entire selected area with current drawing color;
 //  static constexpr uint8_t CMD_SET_COLOR    = 0x50;
-//  static constexpr uint8_t CMD_SET_COLOR_8  = 0x51; // 2Byte 描画色をRGB332で指定;
-//  static constexpr uint8_t CMD_SET_COLOR_16 = 0x52; // 3Byte 描画色をRGB565で指定;
-//  static constexpr uint8_t CMD_SET_COLOR_24 = 0x53; // 4Byte 描画色をRGB888で指定;
-//  static constexpr uint8_t CMD_SET_COLOR_32 = 0x54; // 5Byte 描画色をARGB8888で指定;
+//  static constexpr uint8_t CMD_SET_COLOR_8  = 0x51; // 2Byte Specify drawing color in RGB332;
+//  static constexpr uint8_t CMD_SET_COLOR_16 = 0x52; // 3Byte Specify drawing color in RGB565;
+//  static constexpr uint8_t CMD_SET_COLOR_24 = 0x53; // 4Byte Specify drawing color in RGB888;
+//  static constexpr uint8_t CMD_SET_COLOR_32 = 0x54; // 5Byte Specify drawing color in ARGB8888;
 
-    static constexpr uint8_t CMD_DRAWPIXEL    = 0x60; // 5Byte ドット描画 [1~2]==X [3~4]==Y
-    static constexpr uint8_t CMD_DRAWPIXEL_8  = 0x61; // 6Byte ドット描画 [1~2]==X [3~4]==Y [5  ]==RGB332
-    static constexpr uint8_t CMD_DRAWPIXEL_16 = 0x62; // 7Byte ドット描画 [1~2]==X [3~4]==Y [5~6]==RGB565
-    static constexpr uint8_t CMD_DRAWPIXEL_24 = 0x63; // 8Byte ドット描画 [1~2]==X [3~4]==Y [5~7]==RGB888
-    static constexpr uint8_t CMD_DRAWPIXEL_32 = 0x64; // 9Byte ドット描画 [1~2]==X [3~4]==Y [5~8]==ARGB8888
+    static constexpr uint8_t CMD_DRAWPIXEL    = 0x60; // 5Byte Pixel draw [1~2]==X [3~4]==Y
+    static constexpr uint8_t CMD_DRAWPIXEL_8  = 0x61; // 6Byte Pixel draw [1~2]==X [3~4]==Y [5  ]==RGB332
+    static constexpr uint8_t CMD_DRAWPIXEL_16 = 0x62; // 7Byte Pixel draw [1~2]==X [3~4]==Y [5~6]==RGB565
+    static constexpr uint8_t CMD_DRAWPIXEL_24 = 0x63; // 8Byte Pixel draw [1~2]==X [3~4]==Y [5~7]==RGB888
+    static constexpr uint8_t CMD_DRAWPIXEL_32 = 0x64; // 9Byte Pixel draw [1~2]==X [3~4]==Y [5~8]==ARGB8888
 
-    static constexpr uint8_t CMD_FILLRECT     = 0x68; // 9Byte 矩形塗潰 [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE
-    static constexpr uint8_t CMD_FILLRECT_8   = 0x69; //10Byte 矩形塗潰 [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9  ]==RGB332
-    static constexpr uint8_t CMD_FILLRECT_16  = 0x6A; //11Byte 矩形塗潰 [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~10]==RGB565
-    static constexpr uint8_t CMD_FILLRECT_24  = 0x6B; //12Byte 矩形塗潰 [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~11]==RGB888
-    static constexpr uint8_t CMD_FILLRECT_32  = 0x6C; //13Byte 矩形塗潰 [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~12]==ARGB8888
+    static constexpr uint8_t CMD_FILLRECT     = 0x68; // 9Byte Rectangle fill [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE
+    static constexpr uint8_t CMD_FILLRECT_8   = 0x69; //10Byte Rectangle fill [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9  ]==RGB332
+    static constexpr uint8_t CMD_FILLRECT_16  = 0x6A; //11Byte Rectangle fill [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~10]==RGB565
+    static constexpr uint8_t CMD_FILLRECT_24  = 0x6B; //12Byte Rectangle fill [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~11]==RGB888
+    static constexpr uint8_t CMD_FILLRECT_32  = 0x6C; //13Byte Rectangle fill [1~2]==XS [3~4]==YS [5~6]==XE [7~8]==YE [9~12]==ARGB8888
 
     static constexpr uint8_t CMD_READ_RAW     = 0x80;
-    static constexpr uint8_t CMD_READ_RAW_8   = 0x81; // 1Byte RGB332のピクセルデータを読出し;
-    static constexpr uint8_t CMD_READ_RAW_16  = 0x82; // 1Byte RGB565のピクセルデータを読出し;
-    static constexpr uint8_t CMD_READ_RAW_24  = 0x83; // 1Byte RGB888のピクセルデータを読出し;
+    static constexpr uint8_t CMD_READ_RAW_8   = 0x81; // 1Byte Read RGB332 pixel data;
+    static constexpr uint8_t CMD_READ_RAW_16  = 0x82; // 1Byte Read RGB565 pixel data;
+    static constexpr uint8_t CMD_READ_RAW_24  = 0x83; // 1Byte Read RGB888 pixel data;
 
 //  static constexpr uint8_t CMD_CHANGE_ADDR  = 0xA0;
 
-    static constexpr uint8_t CMD_VIDEO_TIMING_V = 0xB0; // 10Byte 垂直信号のビデオタイミングパラメータ設定
-    static constexpr uint8_t CMD_VIDEO_TIMING_H = 0xB1; // 10Byte 水平信号のビデオタイミングパラメータ設定
-    static constexpr uint8_t CMD_VIDEO_CLOCK    = 0xB2; // 7Byte  ビデオ信号のピクセルクロック用パラメータ設定
+    static constexpr uint8_t CMD_VIDEO_TIMING_V = 0xB0; // 10Byte Vertical signal video timing parameter setting
+    static constexpr uint8_t CMD_VIDEO_TIMING_H = 0xB1; // 10Byte Horizontal signal video timing parameter setting
+    static constexpr uint8_t CMD_VIDEO_CLOCK    = 0xB2; // 7Byte  Video signal pixel clock parameter setting
 
 //  static constexpr uint8_t CMD_UPDATE_BEGIN = 0xF0;
 //  static constexpr uint8_t CMD_UPDATE_DATA  = 0xF1;

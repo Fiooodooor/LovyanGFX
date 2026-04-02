@@ -199,7 +199,7 @@ IT8951 Registers defines
     _write_command(IT8951_I80_CMD_VCOM);
     _write_word(0x0000);
     delay(1);
-    uint16_t tmp[2] = { 0 }; // tmpの要素数を1にすると正しく読み取れない?;
+    uint16_t tmp[2] = { 0 }; // If tmp array size is set to 1, data cannot be read correctly?;
     _read_words(tmp, 1);
 #if defined ( ESP_LOGI )
     ESP_LOGI("DEBUG","getVCOM:%d", tmp[0]);
@@ -418,10 +418,10 @@ IT8951 Registers defines
     uint32_t l = _range_new.left;
     uint32_t r = _range_new.right;
 
-    // 更新範囲の幅が小さすぎる場合、IT8951がフリーズすることがある。;
-    // 厳密には、範囲の左右端の座標値の下2ビット捨てた場合に同値になる場合、;
-    // かつ、以前の表示更新がまだ動作中で範囲が重なる場合にフリーズする事例がある。;
-    // この分岐でそれを防止する。;
+    // If the update range width is too small, IT8951 may freeze.;
+    // Specifically, when the left and right edge coordinate values become equal after discarding the lower 2 bits,;
+    // and if a previous display update is still in progress with overlapping range, freezing may occur.;
+    // This branch prevents that.;
     if ((l & ~3) == (r & ~3))
     {
       if (( l & 3 ) < (3-(r & 3)))
@@ -508,7 +508,7 @@ IT8951 Registers defines
     _rotation = r;
 //  _it8951_rotation = ((-(r + _cfg.offset_rotation)) & 3) | ((r & 4) ^ (_cfg.offset_rotation & 4));
     _internal_rotation = ((r + _cfg.offset_rotation) & 3) | ((r & 4) ^ (_cfg.offset_rotation & 4));
-    // IT8951の回転方向は左回りなので右回りになるよう変更する。;
+    // IT8951 rotation direction is counter-clockwise, so change it to clockwise.;
     _it8951_rotation = ((-_internal_rotation) & 3) | (_internal_rotation & 4);
 
     _width  = _cfg.panel_width;
@@ -766,8 +766,8 @@ IT8951 Registers defines
 
   void Panel_IT8951::readRect(uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, void* __restrict dst, pixelcopy_t* param)
   {
-/// IT8951には画素読出しコマンドが存在せず、画像メモリを直接読むコマンドが提供されている。;
-/// 画像メモリを直接読み出す場合、ビットシフトや回転方向の解決などは自前で行う必要がある。;
+/// IT8951 does not have a pixel readout command; instead, a command to directly read image memory is provided.;
+/// When directly reading image memory, bit shifting and rotation direction handling must be done manually.;
     startWrite();
 
     uint32_t rx, ry, rw, rh;

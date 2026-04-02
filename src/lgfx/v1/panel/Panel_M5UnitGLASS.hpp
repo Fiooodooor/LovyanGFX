@@ -70,13 +70,13 @@ namespace lgfx
 
   protected:
 
-    // UnitGLASS側が応答可能になるまでの待機終了予定時間(Showの後、数msec応答できなくなるため)
+    // Expected end time of waiting until UnitGLASS becomes responsive (it becomes unresponsive for a few msec after Show)
     uint32_t _msec_busy = 0;
 
-    // 変更のあった箇所を記録するビットフラグ配列。
-    // 1ビットあたり 8x8 pixelを割当。
-    // 配列1要素で 16x8 = 128pixel 。
-    // 要素数が8あるので 縦 8x8 = 64pixel。これで 128x64全体をカバーできる。
+    // Bit flag array to record modified areas.
+    // Each bit represents an 8x8 pixel area.
+    // Each array element covers 16x8 = 128 pixels.
+    // With 8 elements, vertical coverage is 8x8 = 64 pixels. This covers the entire 128x64 display.
     uint16_t _modified_flags[PANEL_HEIGHT_MAX >> 3];
 
     bool _enable_buzzer_flg = false;

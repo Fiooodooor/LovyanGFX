@@ -39,14 +39,14 @@ namespace lgfx
     if (!Panel_LCD::init(use_reset)) return false;
 
 /*
- PLLクロック算出方法;
- XTAL_CLOCK = ボードに搭載されているクロックオシレータの周波数 (デフォルトとして10MHzを設定。)
+ PLL clock calculation method;
+ XTAL_CLOCK = Frequency of the clock oscillator on the board (10MHz set as default.)
  VCO  = XTAL_CLOCK * ( M + 1 )
  PLL  = VCO / ( N + 1 )
- ただし、250MHz < VCO  < 800MHz であること。（つまり Mは 25 ～ 78 であること）;
- XTAL_CLOCK 10MHz で PLLを 100MHzに設定したい場合
- M = 29 , N = 2 の場合、 VCO = 10*(29+1) == 300MHz、 PLL = 300/(2+1) == 100MHz となる。;
- M = 39 , N = 3 の場合、 VCO = 10*(39+1) == 400MHz、 PLL = 400/(3+1) == 100MHz となる。;
+ However, VCO must satisfy 250MHz < VCO < 800MHz. (i.e., M must be 25 to 78);
+ When setting PLL to 100MHz with XTAL_CLOCK 10MHz
+ When M = 29, N = 2: VCO = 10*(29+1) == 300MHz, PLL = 300/(2+1) == 100MHz.;
+ When M = 39, N = 3: VCO = 10*(39+1) == 400MHz, PLL = 400/(3+1) == 100MHz.;
 */
     auto xtal = _timing_params.xtal_clock;
     auto target_pll = _timing_params.pll_clock;

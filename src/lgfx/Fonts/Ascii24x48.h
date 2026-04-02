@@ -2,16 +2,16 @@
 #define ASCIIFONTLIB24X48_H_
 /*************************************************************************************/
 //
-//                      字模文件
-//     软件提供：哈迪斯2001（Hades2001）  @2018/09/10
+//                      Font Pattern File
+//     Software provided by: Hades2001  @2018/09/10
 //     Mail: 1521377294@qq.com
-//     编码： ASCII
-//     字体： (ASC48)24x24 Ascii
-//     字模水平像素 ： 24
-//     字模垂直像素 ： 48
-//     字模扫描模式 ： 逐行式
-//     字模储存模式 ： 高位在先
-//     定位方式 ：( Ascii码 - 0x20 ) x 144
+//     Encoding: ASCII
+//     Font: (ASC48)24x24 Ascii
+//     Font horizontal pixels: 24
+//     Font vertical pixels: 48
+//     Font scan mode: Row by row
+//     Font storage mode: Most significant bit first
+//     Positioning method: ( ASCII code - 0x20 ) x 144
 //
 /************************************************************************************/
 //

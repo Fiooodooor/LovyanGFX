@@ -2,8 +2,8 @@
 #include <LovyanGFX.hpp>
 
 #define LGFX_AUTODETECT
-#include <LGFX_AUTODETECT.hpp>  // クラス"LGFX"を準備します
-// #include <lgfx_user/LGFX_ESP32_sample.hpp> // またはユーザ自身が用意したLGFXクラスを準備します
+#include <LGFX_AUTODETECT.hpp>  // Prepares the "LGFX" class
+// #include <lgfx_user/LGFX_ESP32_sample.hpp> // Or prepare an LGFX class created by the user
 
 static LGFX lcd;
 

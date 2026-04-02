@@ -222,7 +222,7 @@ namespace lgfx
 
       _board = board;
 
-      /// autodetectの際にreset済みなのでここではuse_resetをfalseで呼び出す。;
+      /// Since reset was already performed during autodetect, call with use_reset set to false here.;
       return LGFX_Device::init_impl(false, use_clear);
     }
 
@@ -339,12 +339,12 @@ namespace lgfx
           _pin_level(samd51::PORT_B | 21, true);
           _pin_reset(samd51::PORT_C | 7, use_reset); // LCD RST
 
-          _bus_spi.config(bus_cfg);   // 設定を反映する;
+          _bus_spi.config(bus_cfg);   // Apply configuration;
           if (_bus_spi.init())
           {
             id = _read_panel_id(&_bus_spi, samd51::PORT_B | 21);
             if ((id & 0xFF) == 0 && _read_panel_id(&_bus_spi, samd51::PORT_B | 21, 0x0C) != 0)
-            { // check panel (ILI9341) panelIDが0なのでReadDisplayPixelFormat 0x0Cを併用する;
+            { // check panel (ILI9341) panelID is 0, so also use ReadDisplayPixelFormat 0x0C;
               board = board_t::board_WioTerminal;
               _bus_spi.release();
               bus_cfg.freq_write = 60000000;
@@ -371,8 +371,8 @@ namespace lgfx
       }
 #endif
 
-// pybadge はLCDからの読出しが出来ないため、無条件設定になる。;
-// そのため、LGFX_AUTODETECTでは対応しないようにしておく。;
+// PyBadge LCD cannot be read from, so it uses unconditional configuration.;
+// Therefore, it is configured to not function with LGFX_AUTODETECT.;
 #if defined ( LGFX_PYBADGE )
 
       if (board == 0 || board == board_t::board_PyBadge)

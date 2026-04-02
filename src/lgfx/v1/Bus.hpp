@@ -47,65 +47,65 @@ namespace lgfx
 
     virtual bus_type_t busType(void) const = 0;
 
-    /// ペリフェラルの準備を行う。;
+    /// Prepare the peripheral.;
     virtual bool init(void) = 0;
 
-    /// ペリフェラルを解放する。;
+    /// Release the peripheral.;
     virtual void release(void) = 0;
 
-    /// 通信速度を取得する。;
+    /// Get the communication speed.;
     virtual uint32_t getClock(void) const { return 0; }
 
-    /// 受信時の通信速度を取得する。;
+    /// Get the communication speed for receiving.;
     virtual uint32_t getReadClock(void) const { return 0; }
 
-    /// 通信速度を設定する。;
+    /// Set the communication speed.;
     virtual void setClock(uint32_t) {};
 
-    /// 受信時の通信速度を設定する。;
+    /// Set the communication speed for receiving.;
     virtual void setReadClock(uint32_t) {};
 
-    /// 通信トランザクションを開始する。（ペリフェラルを占有する）;
+    /// Begin a communication transaction. (Acquire exclusive access to the peripheral);
     virtual void beginTransaction(void) = 0;
 
-    /// 通信トランザクションを終了する。（ペリフェラルの占有を終了する）;
+    /// End the communication transaction. (Release exclusive access to the peripheral);
     virtual void endTransaction(void) = 0;
 
-    /// 通信が完了するのを待機する;
+    /// Wait for communication to complete;
     virtual void wait(void) = 0;
 
-    /// 現在通信中か否かを返す。true:通信中;
+    /// Returns whether communication is currently in progress. true: busy;
     virtual bool busy(void) const = 0;
 
-    /// DMA転送に必要なペリフェラルの準備を行う。;
+    /// Prepare the peripheral for DMA transfer.;
     virtual void initDMA(void) = 0;
 
-    /// DMA転送キューを追加する。;
+    /// Add a DMA transfer queue entry.;
     virtual void addDMAQueue(const uint8_t* data, uint32_t length) = 0; // { writeBytes(data, length, true); }
 
-    /// 蓄積したDMA転送キューの送信を実行する。;
+    /// Execute transmission of the accumulated DMA transfer queue.;
     virtual void execDMAQueue(void) = 0;
 
-    /// DMA用のバッファを取得する。バスの実装によっては内部的には2個のバッファを交互に使用する。;
-    /// 繰返し実行した場合は前回と異なるポインタを得るが、前々回と同じになる場合がある点に注意すること。;
+    /// Get a buffer for DMA. Depending on the bus implementation, two buffers may be used alternately internally.;
+    /// Note that when called repeatedly, the returned pointer differs from the previous call but may be the same as two calls ago.;
     virtual uint8_t* getDMABuffer(uint32_t length) = 0;
 
-    /// 未送信のデータがあれば送信を開始する。;
+    /// Start sending any unsent data.;
     virtual void flush(void) = 0;
 
-    /// D/Cピンをlowにしてデータを送信する。;
+    /// Set the D/C pin low and transmit data.;
     virtual bool writeCommand(uint32_t data, uint_fast8_t bit_length) = 0;
 
-    /// D/Cピンをhighにしてデータを送信する。;
+    /// Set the D/C pin high and transmit data.;
     virtual void writeData(uint32_t data, uint_fast8_t bit_length) = 0;
 
-    /// D/Cピンをhighにして指定回数繰り返しデータを送信する。;
+    /// Set the D/C pin high and repeatedly transmit data the specified number of times.;
     virtual void writeDataRepeat(uint32_t data, uint_fast8_t bit_length, uint32_t count) = 0;
 
-    /// pixelcopy構造体を利用してピクセルデータを送信する。;
+    /// Transmit pixel data using the pixelcopy struct.;
     virtual void writePixels(pixelcopy_t* pc, uint32_t length) = 0;
 
-    /// 引数のバイト列を送信する。;
+    /// Transmit the byte array passed as an argument.;
     virtual void writeBytes(const uint8_t* data, uint32_t length, bool dc, bool use_dma) = 0;
 
     virtual void beginRead(uint_fast8_t dummy_bits) { beginRead(); if (dummy_bits) { readData(dummy_bits); } }
@@ -146,7 +146,7 @@ namespace lgfx
     void readPixels(void*, pixelcopy_t*, uint32_t) override {}
   };
 
-  /// @brief コマンド体系を持たず、画面全体を送信するタイプのバスの基本形として使用する
+  /// @brief Used as the base for bus types that have no command system and transmit the entire screen
   struct Bus_ImagePush : public Bus_NULL
   {
     bus_type_t busType(void) const override { return bus_type_t::bus_image_push; }

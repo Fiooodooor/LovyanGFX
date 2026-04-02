@@ -3319,9 +3319,9 @@ namespace lgfx
 
   bool LGFXBase::draw_png(DataWrapper* data, int32_t x, int32_t y, int32_t maxWidth, int32_t maxHeight, int32_t offX, int32_t offY, float zoom_x, float zoom_y, datum_t datum)
   {
-    /// PNG描画を繰り返し使用した場合、pngleのメモリ確保に失敗するケースがある。
-    /// そのため、pngle使用後に解放せず、再利用できる構成に変更した。
-    /// メモリを明示的に解放したい場合は releasePngMemory を使用する。
+    /// When PNG drawing is used repeatedly, pngle memory allocation may fail.
+    /// Therefore, memory is not freed after pngle use, and the structure was changed to allow reuse.
+    /// If you want to explicitly free memory, use releasePngMemory.
     if (pngle == nullptr) {
       pngle = lgfx_pngle_new();
     }
@@ -3577,7 +3577,7 @@ namespace lgfx
       uint_fast8_t panel_offsetrot = panel()->config().offset_rotation;
       uint_fast8_t touch_offsetrot = touch()->config().offset_rotation;
 
-      // 回転オフセットをキャンセルしてタッチデバイスのデフォルトの向きに合わせる;
+      // Cancel the rotation offset and align to the default orientation of the touch device;
       setRotation(( (touch_offsetrot ^ panel_offsetrot) & 4)
                  |(-(touch_offsetrot + panel_offsetrot) & 3));
 

@@ -30,7 +30,7 @@ Porting for RP2040:
 // #define DBGPRINT(fmt, ...) snprintf(dbg_buf, 256, "%s %d: " fmt, __FILE__, __LINE__, ##__VA_ARGS__); Serial.print(dbg_buf);
 #define DBGPRINT(fmt, ...)
 
-// 16bit FIFOを使うとき、#defineする。
+// #define when using 16-bit FIFO.
 #define USE_XFER_16
 
 namespace lgfx
@@ -54,13 +54,13 @@ namespace lgfx
 
   bool Bus_SPI::init(void)
   {
-    // それぞれのPINが、割り当て可能かを確認
+    // Check if each PIN can be assigned
     if (lgfx::spi::init(_cfg.spi_host, _cfg.pin_sclk, _cfg.pin_miso, _cfg.pin_mosi).has_error())
     {
       return false;
     }
 
-    // DCピンを出力に設定
+    // Set DC pin to output
     lgfxPinMode(_cfg.pin_dc, pin_mode_t::output);
     _spi_regs = reinterpret_cast<spi_hw_t *>(_spi_dev[_cfg.spi_host]);
 
@@ -276,18 +276,18 @@ namespace lgfx
 
     dc_control(dc);
     if (length & 1)
-    { // 送信バイト数が奇数の時は、最初に1バイト送信する。
+    { // When the number of bytes to send is odd, send 1 byte first.
       set_dss_8();
       reg_dr = *data++;
       if (--length == 0) return;
-      wait_spi();      // 送受信完了を待つ
+      wait_spi();      // Wait for send/receive to complete
     }
     length >>= 1;
-    // 送受信データサイズを16ビット(2バイト)単位とする
+    // Set send/receive data size to 16-bit (2-byte) units
     set_dss_16();
     do
     {
-      // 2バイト単位で送信する
+      // Send in 2-byte units
       uint_fast16_t w = (*data++) << 8;
       w |= *data++;
       while (!is_tx_fifo_not_full()) {}
@@ -308,14 +308,14 @@ namespace lgfx
     set_dss_8();
     do
     {
-      // 書き込めるだけ送信データを書き込む
+      // Write as much transmit data as possible
       while (tx_bit_length && is_tx_fifo_not_full())
       {
-        // データを送信（中身は何でもよい）
+        // Send data (content can be anything)
         _spi_regs->dr = 0x00;
         tx_bit_length--;
       }
-      // 受信FIFOにデータが入るのを待つ
+      // Wait for data to arrive in the receive FIFO
       while (!is_rx_fifo_not_empty()) {}
       res |= (_spi_regs->dr & 0xFF) << idx;
       idx += 8;
@@ -334,14 +334,14 @@ namespace lgfx
     do
     {
       DBGPRINT("tx_length %d : length %d\n", tx_length, length);
-      // 書き込めるだけ送信データを書き込む
+      // Write as much transmit data as possible
       while (tx_length && is_tx_fifo_not_full())
       {
-        // データを送信（中身は何でもよい）
+        // Send data (content can be anything)
         _spi_regs->dr = 0x00;
         tx_length--;
       }
-      // 受信FIFOにデータが入るのを待つ
+      // Wait for data to arrive in the receive FIFO
       while (!is_rx_fifo_not_empty()) {}
       *dst++ = _spi_regs->dr;
     } while (--length);

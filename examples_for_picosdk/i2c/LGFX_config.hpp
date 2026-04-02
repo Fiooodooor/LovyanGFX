@@ -1,6 +1,6 @@
 #include <LovyanGFX.hpp>
 
-// SSD1306 (128x64) の接続設定例
+// Connection configuration example for SSD1306 (128x64)
 #define TFT_SDA  12
 #define TFT_SCL  13
 #define I2C_PORT 0
@@ -9,44 +9,44 @@
 class LGFX : public lgfx::LGFX_Device
 {
   lgfx::Panel_SSD1306 _panel_instance;
-  lgfx::Bus_I2C       _bus_instance;   // I2Cバスのインスタンス
+  lgfx::Bus_I2C       _bus_instance;   // I2C bus instance
 public:
   LGFX(void)
   {
-    {                                    // バス制御の設定を行います。
-      auto cfg = _bus_instance.config(); // バス設定用の構造体を取得します。
+    {                                    // Configure the bus control settings.
+      auto cfg = _bus_instance.config(); // Get the structure for bus configuration.
 
-      // I2Cバスの設定
-      cfg.i2c_port    = I2C_PORT;   // 使用するI2Cポートを選択 (0 or 1)
-      cfg.freq_write  = 400000;     // 送信時のクロック
-      cfg.freq_read   = 400000;     // 受信時のクロック
-      cfg.pin_sda     = TFT_SDA;    // SDAを接続しているピン番号
-      cfg.pin_scl     = TFT_SCL;    // SCLを接続しているピン番号
-      cfg.i2c_addr    = I2C_ADDR;   // I2Cデバイスのアドレス
+      // I2C bus configuration
+      cfg.i2c_port    = I2C_PORT;   // Select the I2C port to use (0 or 1)
+      cfg.freq_write  = 400000;     // Clock frequency for transmission
+      cfg.freq_read   = 400000;     // Clock frequency for reception
+      cfg.pin_sda     = TFT_SDA;    // Pin number connected to SDA
+      cfg.pin_scl     = TFT_SCL;    // Pin number connected to SCL
+      cfg.i2c_addr    = I2C_ADDR;   // I2C device address
 
-      _bus_instance.config(cfg);              // 設定値をバスに反映します。
-      _panel_instance.setBus(&_bus_instance); // バスをパネルにセットします。
+      _bus_instance.config(cfg);              // Apply the configuration to the bus.
+      _panel_instance.setBus(&_bus_instance); // Set the bus to the panel.
     }
 
-    {                                      // 表示パネル制御の設定を行います。
-      auto cfg = _panel_instance.config(); // 表示パネル設定用の構造体を取得します。
+    {                                      // Configure the display panel control settings.
+      auto cfg = _panel_instance.config(); // Get the structure for display panel configuration.
 
-      cfg.pin_cs   = -1; // CSが接続されているピン番号   (-1 = disable)
-      cfg.pin_rst  = -1; // RSTが接続されているピン番号  (-1 = disable)
-      cfg.pin_busy = -1; // BUSYが接続されているピン番号 (-1 = disable)
+      cfg.pin_cs   = -1; // Pin number where CS is connected   (-1 = disable)
+      cfg.pin_rst  = -1; // Pin number where RST is connected  (-1 = disable)
+      cfg.pin_busy = -1; // Pin number where BUSY is connected (-1 = disable)
 
-      cfg.panel_width  = 128; // 実際に表示可能な幅
-      cfg.panel_height = 64;  // 実際に表示可能な高さ
-      //cfg.offset_x     = 0;   // パネルのX方向オフセット量
-      //cfg.offset_y     = 0;   // パネルのY方向オフセット量
+      cfg.panel_width  = 128; // Actual displayable width
+      cfg.panel_height = 64;  // Actual displayable height
+      //cfg.offset_x     = 0;   // Panel X-direction offset
+      //cfg.offset_y     = 0;   // Panel Y-direction offset
 
-      // cfg.offset_rotation = 4;    // 回転方向の値のオフセット 0~7 (4~7は上下反転)
-      // cfg.invert          = true; // パネルの明暗が反転してしまう場合 trueに設定
-      // cfg.rgb_order       = true; // パネルの赤と青が入れ替わってしまう場合 trueに設定
+      // cfg.offset_rotation = 4;    // Rotation direction value offset 0~7 (4~7 are upside down)
+      // cfg.invert          = true; // Set to true if the panel brightness is inverted
+      // cfg.rgb_order       = true; // Set to true if the panel red and blue are swapped
 
       _panel_instance.config(cfg);
     }
 
-    setPanel(&_panel_instance); // 使用するパネルをセットします。
+    setPanel(&_panel_instance); // Set the panel to use.
   }
 };

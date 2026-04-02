@@ -55,7 +55,7 @@ Contributors:
 #endif
 
 #if defined ( CONFIG_IDF_TARGET_ESP32S3 )
- /// ESP32-S3をターゲットにした際にREG_SPI_BASEの定義がおかしいため自前で設定
+ /// The definition of REG_SPI_BASE is incorrect when targeting ESP32-S3, so set it manually
  #if defined( REG_SPI_BASE )
   #undef REG_SPI_BASE
  #endif
@@ -116,7 +116,7 @@ namespace lgfx
   static inline void heap_free(void* buf) { heap_caps_free(buf); }
   static inline bool heap_capable_dma(const void* ptr) { return esp_ptr_dma_capable(ptr); }
 
-  /// 引数のポインタが組込RAMか判定する  true=内部RAM / false=外部RAMやROM等;
+  /// Determine if the argument pointer is in embedded RAM  true=internal RAM / false=external RAM, ROM, etc.;
   static inline bool isEmbeddedMemory(const void* ptr) { return esp_ptr_in_dram(ptr); }
 /*
 #if defined ( CONFIG_IDF_TARGET_ESP32S3 )
@@ -291,15 +291,15 @@ protected:
 
     enum command_t : uint8_t
     {
-      command_end = 0,              // コマンド終了
-      command_read,                 // [1]=GPIO番号 1bit読みとる
-      command_write_low,            // [1]=GPIO番号 LOW出力
-      command_write_high,           // [1]=GPIO番号 HIGH出力
-      command_mode_output,          // [1]=GPIO番号 outputモードに変更する
-      command_mode_input,           // [1]=GPIO番号 inputモードに変更する
-      command_mode_input_pulldown,  // [1]=GPIO番号 input pulldownモードに変更する
-      command_mode_input_pullup,    // [1]=GPIO番号 input pullupモードに変更する
-      command_delay,                // [1]=停止する時間[ミリ秒]
+      command_end = 0,              // End of command
+      command_read,                 // [1]=GPIO number, read 1 bit
+      command_write_low,            // [1]=GPIO number, output LOW
+      command_write_high,           // [1]=GPIO number, output HIGH
+      command_mode_output,          // [1]=GPIO number, change to output mode
+      command_mode_input,           // [1]=GPIO number, change to input mode
+      command_mode_input_pulldown,  // [1]=GPIO number, change to input pulldown mode
+      command_mode_input_pullup,    // [1]=GPIO number, change to input pullup mode
+      command_delay,                // [1]=delay time [milliseconds]
     };
     bool command(command_t cmd, uint8_t pin);
     uint32_t command(const uint8_t* cmd_list);

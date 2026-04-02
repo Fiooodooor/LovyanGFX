@@ -26,7 +26,7 @@ namespace lgfx
  inline namespace v1
  {
 //----------------------------------------------------------------------------
-// ToDo : 初期化コマンド以外は RM68120と共通化する;
+// ToDo : Consolidate with RM68120 for everything except initialization commands;
 
   void Panel_NT35510::writeRegister(uint16_t cmd, uint8_t data)
   {
@@ -236,7 +236,7 @@ namespace lgfx
     _bus->beginRead(_cfg.dummy_read_pixel);
 
     if (_bus->busType() == bus_type_t::bus_parallel16)
-    { /// 16bitパラレル時の読出しは、RGB3Byte+ダミー1Byteの4Byte単位構成となっているため、ダミーデータの除去処理が必要;
+    { /// When reading in 16-bit parallel mode, data is structured as RGB 3Bytes + 1 dummy Byte per 4-Byte unit, so dummy data removal is required;
       uint32_t* tmp = (uint32_t*)alloca(len * 4);
       _bus->readBytes((uint8_t*)tmp, len * 4);
       for (size_t idx = 0; idx < len; ++idx)

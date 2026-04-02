@@ -106,7 +106,7 @@ public:
 #if defined ( ESP_LOGD )
       ESP_LOGD("LGFX","ModuleDisplay with Core2/Tough");
 #endif
-      // トランスミッタと通信できなければAXP192に外部5V出力を要求
+      // Request external 5V output from AXP192 if unable to communicate with transmitter
       if (lgfx::i2c::beginTransaction(1, 0x39, 400000).has_error()
        || lgfx::i2c::endTransaction(1).has_error())
       {
