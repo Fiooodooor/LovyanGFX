@@ -109,8 +109,8 @@ namespace lgfx
 
       uint8_t bits = (depth & color_depth_t::bit_mask);
       w = (w + 3) & ~3;
-// 暫定実装。画面全体のバッファを一括で確保する。
-// ToDo : 分割確保
+// Provisional implementation. Allocate the entire screen buffer at once.
+// ToDo: Allocate in segments
       _frame_buffer = (uint8_t*)heap_alloc_psram((w * bits >> 3) * h);
       if (_frame_buffer) {
         _lines_buffer = lineArray;

@@ -45,7 +45,7 @@ namespace lgfx
 
     struct config_detail_t
     {
-      // 操作対象とするフレームバッファのパス名、または、デバイス名称 ("st7789") 等の文字列へのポインタを指定する。
+      // Specify a pointer to the path name of the target frame buffer, or a device name string such as ("st7789").
       const char* device_name = "/dev/fb0";
     };
 
@@ -78,7 +78,7 @@ namespace lgfx
 
     uint_fast8_t getTouchRaw(touch_point_t* tp, uint_fast8_t count) override;
 
-    // init前に使用し、操作対象とするフレームバッファのパス名、または、デバイス名称 ("st7789") 等の文字列へのポインタを指定する。
+    // Use before init to specify a pointer to the path name of the target frame buffer, or a device name string such as ("st7789").
     void setDeviceName(const char* device_name) { _config_detail.device_name = device_name; };
 
     const config_detail_t& config_detail(void) const { return _config_detail; }

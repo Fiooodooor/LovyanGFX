@@ -371,7 +371,7 @@ namespace lgfx
       {
         do
         {
-          param->fp_copy(&_img[x * k], y, y + 1, param); /// xとyを入れ替えて処理する;
+          param->fp_copy(&_img[x * k], y, y + 1, param); /// Swap x and y for processing;
           if (x != xe)
           {
             x += ax;

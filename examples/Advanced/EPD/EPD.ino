@@ -1,16 +1,16 @@
 
-// M5PaperやCoreInkのライブラリと同時に利用する場合はLovyanGFX.hppより前にincludeします。
+// When using with M5Paper or CoreInk libraries, include them before LovyanGFX.hpp.
 // If you use it with M5Paper or CoreInk libraries, include it before LovyanGFX.hpp.
 // #include <M5EPD.h>
 // #include <M5CoreInk.h>
 
-// 使用するボードに応じた define を記述します。
-// （ボードマネージャで該当ボードを選択している場合は省略しても構いません）
+// Write the define corresponding to the board you are using.
+// (This can be omitted if you have selected the appropriate board in the board manager.)
 // #define LGFX_M5PAPER
 // #define LGFX_M5STACK_COREINK
-   #define LGFX_AUTODETECT      // 自動検出を使用する場合はこちらの記述だけで動作します。
+   #define LGFX_AUTODETECT      // When using auto-detection, this line alone is sufficient.
 
-// 使用ボードのdefineより後にLovyanGFX.hppをincludeします。
+// Include LovyanGFX.hpp after the board define.
 #include <LovyanGFX.hpp>
 
 LGFX gfx;
@@ -27,32 +27,32 @@ void setup(void)
 {
 // M5.begin();
 
-  gfx.init();   // 初期化を行います。LCDもEPDも共通です。
+  gfx.init();   // Perform initialization. This is common for both LCD and EPD.
 
-  gfx.setRotation(0);  // 回転方向の設定はLCDもEPDも共通です。0～3で右回りに90度ずつ回転します。4～7は上下反転になります。
+  gfx.setRotation(0);  // Rotation setting is common for both LCD and EPD. 0-3 rotates 90 degrees clockwise each step. 4-7 adds vertical flip.
 
   w = gfx.width();
   h = gfx.height();
 
-  gfx.setBrightness(128); // バックライトの輝度設定はEPDでは効果を持ちません。
+  gfx.setBrightness(128); // Backlight brightness setting has no effect on EPD.
 
-// EPDの動作モードを設定できます。描画用途に応じて 都度、変更してください。
-// ※ M5Stack CoreInk では epd_quality以外は差はありません。
-  gfx.setEpdMode(epd_mode_t::epd_fastest);  // 最速更新、白黒反転なし、残像が残りやすい
-  gfx.setEpdMode(epd_mode_t::epd_fast);     // 高速更新、白黒反転なし、残像が残りやすい
-  gfx.setEpdMode(epd_mode_t::epd_text);     // 高品質更新、白黒反転が一瞬起きる（白背景用）
-  gfx.setEpdMode(epd_mode_t::epd_quality);  // 高品質更新、白黒反転が一瞬起きる
+// You can set the EPD operating mode. Change it as needed depending on the drawing purpose.
+// * On M5Stack CoreInk, there is no difference except for epd_quality.
+  gfx.setEpdMode(epd_mode_t::epd_fastest);  // Fastest refresh, no black/white inversion, prone to ghosting
+  gfx.setEpdMode(epd_mode_t::epd_fast);     // Fast refresh, no black/white inversion, prone to ghosting
+  gfx.setEpdMode(epd_mode_t::epd_text);     // High quality refresh, brief black/white inversion (for white backgrounds)
+  gfx.setEpdMode(epd_mode_t::epd_quality);  // High quality refresh, brief black/white inversion
 
-// M5Paper (IT8951)での各モードの特徴は以下の通りです。
-// epd_fastest = DU4  更新時間 120msec  完全な白と黒のみ描画でき、中間階調は描画されない。また、中間階調で表示されている箇所を更新できない。
-// epd_fast    = DU   更新時間 260msec  完全な白と黒のみ描画でき、中間階調は描画されない。
-// epd_text    = GL16 更新時間 450msec  グレースケール16階調で描画できる。白背景・黒文字 用途
-// epd_quality = GC16 更新時間 450msec  グレースケール16階調で描画できる。画像用途
+// The characteristics of each mode on M5Paper (IT8951) are as follows:
+// epd_fastest = DU4  Refresh time 120msec  Can only draw pure white and black; intermediate grayscale is not drawn. Also cannot update areas displaying intermediate grayscale.
+// epd_fast    = DU   Refresh time 260msec  Can only draw pure white and black; intermediate grayscale is not drawn.
+// epd_text    = GL16 Refresh time 450msec  Can draw with 16 levels of grayscale. For white background / black text use cases.
+// epd_quality = GC16 Refresh time 450msec  Can draw with 16 levels of grayscale. For image use cases.
 
 
-// 描画関数はすべてLCDと同様に利用可能です。
-// 色指定もLCDと同様に指定できますが、自動的にグレースケールに変換されます。
-// （グレースケール変換時の比率は R1:G2:B1 です。緑色がやや明るく表現されます。）
+// All drawing functions can be used the same way as with LCD.
+// Colors can also be specified the same way as LCD, but they are automatically converted to grayscale.
+// (The grayscale conversion ratio is R1:G2:B1. Green appears slightly brighter.)
 
   int rectwidth = std::min(w, h) / 2;
   gfx.fillTriangle( w / 2, 0, 0, h - 1, w - 1, h - 1, TFT_RED);
@@ -62,45 +62,45 @@ void setup(void)
   delay(3000);
 
 
-// 描画処理をstartWrite/endWriteで囲むと、endWrite() のタイミングでまとめて画面に反映できます。
-// または、display() を呼んだ時点でも画面に反映できます。
+// Wrapping drawing operations with startWrite/endWrite allows them to be applied to the screen all at once at the endWrite() timing.
+// Alternatively, the screen can also be updated when display() is called.
 
-  gfx.startWrite(); // 描画内容の即時反映を抑止。
+  gfx.startWrite(); // Suppress immediate screen updates of drawing content.
 
   for (int i = 0; i < 20; ++i)
   {
-    gfx.drawLine(i * w / 20, 0, w - 1, i * h / 20, TFT_BLACK);  // この時点では画面に反映されない。
+    gfx.drawLine(i * w / 20, 0, w - 1, i * h / 20, TFT_BLACK);  // Not yet reflected on screen at this point.
     gfx.drawLine(0, i * h / 20, i * w / 20, h - 1, TFT_BLACK);
   }
 
-  gfx.endWrite();   // ここで画面に反映される。
+  gfx.endWrite();   // Screen is updated here.
 
   delay(3000);
 
-  gfx.startWrite(); // 描画内容の即時反映を抑止。
+  gfx.startWrite(); // Suppress immediate screen updates of drawing content.
 
   for (int i = 0; i < 5; i++)
   {
     for (int j = 0; j < 20; j++)
     {
-      gfx.fillRect(random(w-20), random(h-20), 20, 20, random(65535));  // この時点では画面に反映されない。
+      gfx.fillRect(random(w-20), random(h-20), 20, 20, random(65535));  // Not yet reflected on screen at this point.
     }
-    gfx.display();  // ここで画面に反映される。
+    gfx.display();  // Screen is updated here.
   }
 
-  gfx.endWrite();   // すでに画面に反映済みの場合は、この時点では何も起きない。
+  gfx.endWrite();   // If the screen has already been updated, nothing happens at this point.
 
   delay(3000);
 
-// ※ 正確には、  display() を呼んだ時にのみ 画面に反映される仕組みなのですが、
-// SPIバス解放のタイミングで display() を呼ぶ仕組みを用意しており、初期値で有効にしています。
-// この仕組みにより、描画関数やendWriteを呼んだ直後に自動で画面に反映されています。
-// なお、 setAutoDisplay(bool) でこの自動display呼出しの有効／無効を変更できます。
+// * Precisely, the screen is only updated when display() is called,
+// but a mechanism is provided to call display() when the SPI bus is released, and it is enabled by default.
+// Due to this mechanism, the screen is automatically updated immediately after calling drawing functions or endWrite.
+// You can enable/disable this automatic display call using setAutoDisplay(bool).
 
-  gfx.setAutoDisplay(false);  // 自動表示更新を無効にする。（以降は display()を呼ぶまで画面に反映されない。）
+  gfx.setAutoDisplay(false);  // Disable automatic display update. (From here on, the screen is not updated until display() is called.)
 
   gfx.setFont(&fonts::Font4);
-  gfx.setTextColor(TFT_BLACK, TFT_WHITE); // 文字色を黒、背景色を白に指定
+  gfx.setTextColor(TFT_BLACK, TFT_WHITE); // Set text color to black, background color to white
   gfx.setTextDatum(textdatum_t::top_center);
   for (int i = 0; i < 10; i++)
   {
@@ -108,44 +108,44 @@ void setup(void)
   }
   gfx.qrcode("Hello world !", (w-rectwidth)/2, (h-rectwidth)/2, rectwidth);
 
-  gfx.display();   // ここで画面に反映される。
+  gfx.display();   // Screen is updated here.
 
-  gfx.setAutoDisplay(true);  // 自動表示更新を有効にする。
+  gfx.setAutoDisplay(true);  // Enable automatic display update.
 
   delay(3000);
 
   gfx.fillScreen(TFT_WHITE);
 
-// M5Paper (IT8951)では epd_quality/epd_text を使用するとグレースケール16階調の表示が可能ですが、
-// epd_fast/epd_fastestを使用した場合は白黒２階調のみに制限されます。
-// この場合でもLovyanGFXのタイルパターン処理により疑似的に17階調を表現できます。
+// On M5Paper (IT8951), using epd_quality/epd_text enables 16-level grayscale display,
+// but when using epd_fast/epd_fastest, it is limited to only 2-level black and white.
+// Even in this case, LovyanGFX's tile pattern processing can simulate 17 levels of grayscale.
 
-  gfx.setEpdMode(epd_mode_t::epd_quality); // 高品質更新モードに設定（以後の描画はグレースケールを使用する）
+  gfx.setEpdMode(epd_mode_t::epd_quality); // Set to high quality refresh mode (subsequent drawing uses grayscale)
   gfx.startWrite();
   for (int i = 0; i < 16; i++)
   {
     int level = 8 + i * 16;
     gfx.fillRect(i * w / 16, 0, w / 16 + 1, h / 2, gfx.color888(level, level, level));
   }
-  gfx.display();  // ここでの表示更新は高品質モードとなる。
+  gfx.display();  // Display update here uses high quality mode.
 
-  gfx.waitDisplay(); // EPDの表示更新の完了待機。
-  // ※ 待機せずに表示更新中かどうかを調べたい場合は displayBusy() を使用します。
-  //    他の処理の合間に描画を行いたい場合などにご利用ください。
-  // 例 : while (gfx.displayBusy()) delay(10); // delayの代わりに何か他の処理を指定
+  gfx.waitDisplay(); // Wait for EPD display update to complete.
+  // * To check if a display update is in progress without waiting, use displayBusy().
+  //   Use this when you want to perform drawing between other operations.
+  // Example: while (gfx.displayBusy()) delay(10); // Replace delay with some other processing
 
 
-  gfx.setEpdMode(epd_mode_t::epd_fast);  // 高速更新モードに設定（以後の描画は白黒２値を使用する）
+  gfx.setEpdMode(epd_mode_t::epd_fast);  // Set to fast refresh mode (subsequent drawing uses 2-level black and white)
   for (int i = 0; i < 17; i++)
   {
     int level = std::min(255, i * 16);
     gfx.fillRect(i * w / 17, h / 2, w / 17+1, h / 2, gfx.color888(level, level, level));
   }
-  gfx.display();  // ここでの描画は高速モードとなる。
+  gfx.display();  // Drawing here uses fast mode.
 
   delay(3000);
 
-  // M5Paper (IT8951)の高品質モードではグレースケール16階調＋タイルパターン処理により241階調が表現できます。
+  // In high quality mode on M5Paper (IT8951), 16-level grayscale + tile pattern processing can express 241 levels.
   gfx.setEpdMode(epd_mode_t::epd_quality);
 
   for (int i = 0; i < 256; ++i)
@@ -158,7 +158,7 @@ void setup(void)
 
   delay(3000);
 
-  // M5Paper (IT8951)の表示更新は複数個所を同時に行う事が可能です。
+  // On M5Paper (IT8951), display updates can be performed on multiple areas simultaneously.
   gfx.startWrite();
   for (int i = 0; i < 16; ++i)
   {
@@ -170,40 +170,40 @@ void setup(void)
       std::int_fast8_t l = 255 - (i * 16 + j);
       gfx.fillRect(x1, y1, x2 - x1, y2 - y1, gfx.color888(l, l, l));
       x1 = x2;
-      if ((j & 7) == 7)  gfx.display(); // ８回に１回 表示更新を行う
+      if ((j & 7) == 7)  gfx.display(); // Perform display update every 8 times
     }
   }
   gfx.endWrite();
 
-  // ※ 表示更新中の範囲への描画をしないように注意してください。
-  //    表示更新の途中で内容が変更されると正しく描画されなくなります。
+  // * Be careful not to draw to areas that are currently being updated.
+  //   If the content is changed during a display update, the drawing will not render correctly.
 
   delay(3000);
 
   gfx.fillScreen(TFT_WHITE);
 
-  // 前回の表示更新範囲と重なる範囲に描画する場合、
-  // LovyanGFX内部で表示更新が完了するのを待機する仕組みになっています。
-  // そのため特に意識しなくても表示が乱れることがありません。
+  // When drawing to an area that overlaps with the previous display update range,
+  // LovyanGFX internally waits for the display update to complete.
+  // Therefore, the display will not become corrupted without any special consideration.
   gfx.setEpdMode(epd_mode_t::epd_quality);
-  gfx.fillRect(0, 0, w/2, h/2, TFT_BLUE);  // これらの描画は範囲が重なっているが、
-  gfx.fillRect(0, 0, w/3, h/3, TFT_YELLOW);// 表示更新を待機する仕組みが機能するため
-  gfx.fillRect(0, 0, w/4, h/4, TFT_BLUE);  // 特に意識しなくても描画が乱れることがない
+  gfx.fillRect(0, 0, w/2, h/2, TFT_BLUE);  // These drawings overlap in area, but
+  gfx.fillRect(0, 0, w/3, h/3, TFT_YELLOW);// the waiting mechanism for display updates works,
+  gfx.fillRect(0, 0, w/4, h/4, TFT_BLUE);  // so the drawing is not corrupted without special handling
   gfx.fillRect(0, 0, w/5, h/5, TFT_YELLOW);
   gfx.fillRect(0, 0, w/6, h/6, TFT_BLUE);
   gfx.fillRect(0, 0, w/7, h/7, TFT_YELLOW);
 
   gfx.waitDisplay();
 
-  // しかし自動チェックは完全ではありません。「前回の表示更新範囲」と比較する仕組みのため、
-  // 別の範囲への描画を間に挟むと範囲チェックが十分に機能しなくなります。
-  gfx.fillRect(w/2, 0, w/2, h/2, TFT_BLUE);  // 範囲が重ならない描画を交互に行うと、
-  gfx.drawPixel(0, 0);                       // 表示更新を待機する仕組みが機能せず、
-  gfx.fillRect(w/2, 0, w/3, h/3, TFT_YELLOW);// 正しく描画されないようになる。
+  // However, the automatic check is not perfect. Since it compares against the "previous display update range",
+  // if a drawing to a different area is inserted in between, the range check will not function sufficiently.
+  gfx.fillRect(w/2, 0, w/2, h/2, TFT_BLUE);  // If non-overlapping drawings alternate,
+  gfx.drawPixel(0, 0);                       // the display update waiting mechanism fails,
+  gfx.fillRect(w/2, 0, w/3, h/3, TFT_YELLOW);// and the drawing will not render correctly.
   gfx.drawPixel(0, 0);
-  gfx.fillRect(w/2, 0, w/4, h/4, TFT_BLUE);  // ※ 先の例と同じ色で描画しているのに
-  gfx.drawPixel(0, 0);                       // 表示される階調が違っていたり、
-  gfx.fillRect(w/2, 0, w/5, h/5, TFT_YELLOW);// 正しい描画が行われていないことを確認してください
+  gfx.fillRect(w/2, 0, w/4, h/4, TFT_BLUE);  // * Note: even though the same colors as the previous example are used,
+  gfx.drawPixel(0, 0);                       // the displayed grayscale levels may differ,
+  gfx.fillRect(w/2, 0, w/5, h/5, TFT_YELLOW);// confirming that the drawing is not done correctly.
   gfx.drawPixel(0, 0);
   gfx.fillRect(w/2, 0, w/6, h/6, TFT_BLUE);
   gfx.drawPixel(0, 0);
@@ -211,22 +211,21 @@ void setup(void)
 
   gfx.waitDisplay();
 
-  // また、表示更新モードが epd_fastest モードの場合は、レスポンスを最優先とするため、
-  // 表示更新範囲のチェック処理を省略するようになります。
-  gfx.setEpdMode(epd_mode_t::epd_fastest);    // 最速更新モードに設定する。
-  gfx.fillRect(0, h/2, w/2, h/2, TFT_BLUE);   // 以後の描画は表示更新範囲と重複していても、
-  gfx.fillRect(0, h/2, w/3, h/3, TFT_YELLOW); // 一切待機せずに描画するようになる。
-  gfx.fillRect(0, h/2, w/4, h/4, TFT_BLUE);   // そのため範囲の重なった描画を続けて行うと、
-  gfx.fillRect(0, h/2, w/5, h/5, TFT_YELLOW); // 表示更新中に内容を書き換えてしまい
-  gfx.fillRect(0, h/2, w/6, h/6, TFT_BLUE);   // 意図した描画結果にならない。
+  // Also, when the display update mode is epd_fastest, the update range check is skipped to prioritize responsiveness.
+  gfx.setEpdMode(epd_mode_t::epd_fastest);    // Set to fastest refresh mode.
+  gfx.fillRect(0, h/2, w/2, h/2, TFT_BLUE);   // Subsequent drawings will not wait at all even if they overlap
+  gfx.fillRect(0, h/2, w/3, h/3, TFT_YELLOW); // with the display update range.
+  gfx.fillRect(0, h/2, w/4, h/4, TFT_BLUE);   // Therefore, consecutive drawings to overlapping areas
+  gfx.fillRect(0, h/2, w/5, h/5, TFT_YELLOW); // will overwrite content during display update,
+  gfx.fillRect(0, h/2, w/6, h/6, TFT_BLUE);   // resulting in unintended drawing results.
   gfx.fillRect(0, h/2, w/7, h/7, TFT_YELLOW);
 
   gfx.fillRect(w/2, h/2, w/2, h/2, TFT_BLUE);
-  gfx.waitDisplay();                           // 必要に応じてwaitDisplayで待機させる。
-  gfx.fillRect(w/2, h/2, w/3, h/3, TFT_YELLOW);// 正しく待機することで、
-  gfx.waitDisplay();                           // 描画結果の乱れを防止できる。
+  gfx.waitDisplay();                           // Wait with waitDisplay as needed.
+  gfx.fillRect(w/2, h/2, w/3, h/3, TFT_YELLOW);// By waiting properly,
+  gfx.waitDisplay();                           // drawing corruption can be prevented.
   gfx.fillRect(w/2, h/2, w/4, h/4, TFT_BLUE);
-  gfx.waitDisplay();                           // 表示結果が先の例と違うことを確認してください
+  gfx.waitDisplay();                           // Verify that the display result differs from the previous example.
   gfx.fillRect(w/2, h/2, w/5, h/5, TFT_YELLOW);
   gfx.waitDisplay();
   gfx.fillRect(w/2, h/2, w/6, h/6, TFT_BLUE);
@@ -240,7 +239,7 @@ void setup(void)
 
   gfx.fillScreen(TFT_WHITE);
 
-  if (gfx.touch())  // touch関数の戻り値がnullかどうかでタッチコントローラの有無を判定できます。
+  if (gfx.touch())  // You can check whether a touch controller is present by whether the touch function returns null.
   {
     gfx.startWrite();
     for (int i = 0; i < 1024; i++)
@@ -260,7 +259,7 @@ void setup(void)
       delay(15);
 
       std::int32_t x, y, number = 0;
-      while (gfx.getTouch(&x, &y, number))  // getTouch関数でタッチ中の座標を取得できます。
+      while (gfx.getTouch(&x, &y, number))  // You can get the coordinates of active touches using getTouch.
       {
         gfx.fillCircle(x, y, 5, (std::uint32_t)(number * 0x333333u));
         gfx.display();

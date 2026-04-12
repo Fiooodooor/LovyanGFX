@@ -374,7 +374,7 @@ namespace lgfx
         _need_wait = true;
         spi->DATA.reg = data;
         if (!--length) return;
-        while (spi->INTFLAG.bit.TXC == 0); // LENEN有効の時はTXC待ち(DRE待ちを使うと挙動がおかしくなる);
+        while (spi->INTFLAG.bit.TXC == 0); // Wait for TXC when LENEN is enabled (using DRE wait causes incorrect behavior);
       }
       spi->LENGTH.reg = 0;
       data |= data << 16;
@@ -529,7 +529,7 @@ namespace lgfx
     set_clock_read();
 
     if (dummy_bits & 7u)
-    { /// CPOLを変化させてダミークロックを生成する;
+    { /// Toggle CPOL to generate a dummy clock;
       size_t bits = dummy_bits & 7u;
       dummy_bits &= ~7u;
       while (_sercom->SPI.SYNCBUSY.bit.ENABLE) {}

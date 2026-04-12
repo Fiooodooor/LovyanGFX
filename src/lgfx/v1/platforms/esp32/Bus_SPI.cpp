@@ -129,7 +129,7 @@ namespace lgfx
     _spi_dma_outstatus_reg = reg(SPI_DMA_OUTSTATUS_REG(spi_port));
 #endif
     if (cfg.pin_dc < 0)
-    { // D/Cピン不使用の場合はGPIOレジスタの代わりにダミーとしてmask_reg_dcのアドレスを設定しておく;
+    { // When D/C pin is not used, set the address of mask_reg_dc as a dummy instead of the GPIO register;
       _mask_reg_dc = 0;
       _gpio_reg_dc[0] = &_mask_reg_dc;
       _gpio_reg_dc[1] = &_mask_reg_dc;
@@ -175,7 +175,7 @@ namespace lgfx
       _inited = spi::init(_cfg.spi_host, _cfg.pin_sclk, _cfg.pin_miso, _cfg.pin_mosi, dma_ch).has_value();
 
 #if defined ( SOC_GDMA_SUPPORTED )
-    // 割当られたDMAチャネル番号を取得する
+    // Get the assigned DMA channel number
 
 #if defined ( SOC_GDMA_TRIG_PERIPH_SPI3 )
     int peri_sel = (_spi_port == 3) ? SOC_GDMA_TRIG_PERIPH_SPI3 : SOC_GDMA_TRIG_PERIPH_SPI2;
@@ -186,7 +186,7 @@ namespace lgfx
     int assigned_dma_ch = search_dma_out_ch(peri_sel);
 
     if (assigned_dma_ch >= 0)
-    { // DMAチャンネルが特定できたらそれを使用する;
+    { // If DMA channel was identified, use it;
       _spi_dma_out_link_reg  = reg(DMA_OUT_LINK_CH0_REG       + assigned_dma_ch * SIZE_OF_DMA_OUT_CH);
       _spi_dma_outstatus_reg = reg(DMA_OUTFIFO_STATUS_CH0_REG + assigned_dma_ch * SIZE_OF_DMA_OUT_CH);
     }
@@ -207,7 +207,7 @@ namespace lgfx
     if (pin >= GPIO_NUM_MAX) return;
     gpio_reset_pin( (gpio_num_t)pin);
     gpio_matrix_out((gpio_num_t)pin, SIG_GPIO_OUT_IDX, 0, 0);
-    // gpio_matrix_in には、ArduinoESP32 v1.0.x系では重大なバグがある。(無関係なピンに対して設定変更が行われることがある)
+    // gpio_matrix_in has a critical bug in ArduinoESP32 v1.0.x series. (Settings may be changed for unrelated pins)
     // gpio_matrix_in( (gpio_num_t)pin, 0x100, 0   );
   }
 
@@ -544,7 +544,7 @@ namespace lgfx
       if (length == 0) return;
     }
 
-/// ESP32-C3 で HIGHPART を使用すると異常動作するため分岐する;
+/// Using HIGHPART on ESP32-C3 causes abnormal behavior, so branch here;
 #if defined ( SPI_UPDATE )  // for C3/S3
 
     const uint32_t limit = (bytes == 2) ? 32 : 21;
@@ -647,7 +647,7 @@ namespace lgfx
       dc_control(dc);
       set_write_len(length);
 #if defined ( CONFIG_IDF_TARGET_ESP32P4 )
-// P4のペリフェラルレジスタへのmemcpyはうまく動作しないので処理を分岐する
+// memcpy to P4 peripheral registers does not work correctly, so branch the processing
       for (int i = 0; i < aligned_len >> 2; ++i) {
         spi_w0_reg[i] = ((uint32_t*)data)[i];
       }
@@ -688,11 +688,11 @@ namespace lgfx
         auto dma_conf = *dma_conf_reg & ~(SPI_OUT_DATA_BURST_EN | SPI_AHBM_RST | SPI_AHBM_FIFO_RST | SPI_OUT_RST);
         *dma_conf_reg = dma_conf | SPI_AHBM_RST | SPI_AHBM_FIFO_RST | SPI_OUT_RST;
 
-        // 送信長が4の倍数の場合のみバーストモードを使用する
-        // ※ 以下の3つの条件が揃うと、DMA転送の末尾付近でデータが化ける現象が起きる。
-        //    1.送信クロック80MHz (APBクロックと1:1)
-        //    2.DMAバースト読出し有効
-        //    3.送信データ長が4の倍数ではない (1Byte~3Byteの端数がある場合)
+        // Use burst mode only when the transfer length is a multiple of 4
+        // Note: When the following 3 conditions are all met, data corruption occurs near the end of DMA transfer.
+        //    1. Transfer clock 80MHz (1:1 with APB clock)
+        //    2. DMA burst read enabled
+        //    3. Transfer data length is not a multiple of 4 (when there is a remainder of 1~3 Bytes)
         dma_conf |= (length & 3) ? (SPI_OUTDSCR_BURST_EN) : (SPI_OUTDSCR_BURST_EN | SPI_OUT_DATA_BURST_EN);
 
         *dma_conf_reg = dma_conf;
@@ -703,7 +703,7 @@ namespace lgfx
         set_write_len(len << 3);
         *_gpio_reg_dc[dc] = _mask_reg_dc;
 
-        // DMA準備完了待ち;
+        // Wait for DMA preparation to complete;
 #if defined ( SOC_GDMA_SUPPORTED )
         while (*_spi_dma_outstatus_reg & DMA_OUTFIFO_EMPTY_CH0 ) {}
 #elif defined (SPI_DMA_OUTFIFO_EMPTY)
@@ -736,7 +736,7 @@ label_start:
 
     auto spi_w0_reg = _spi_w0_reg;
 
-/// ESP32-C3 で HIGHPART を使用すると異常動作するため分岐する;
+/// Using HIGHPART on ESP32-C3 causes abnormal behavior, so branch here;
 #if defined ( SPI_UPDATE )  // for C3/S3
 
     uint32_t regbuf[16];
@@ -908,7 +908,7 @@ label_start:
 #endif
 
     set_write_len(len << 3);
-    // DMA準備完了待ち;
+    // Wait for DMA preparation to complete;
 #if defined ( SOC_GDMA_SUPPORTED )
     while (*_spi_dma_outstatus_reg & DMA_OUTFIFO_EMPTY_CH0 ) {}
 #elif defined (SPI_DMA_OUTFIFO_EMPTY)
@@ -945,7 +945,7 @@ label_start:
 
 #if defined ( SPI_UPDATE )  // for C3/S3
 
-    /// ESP32-C3とS3は、1bitの送受信ができないため、CPOLの極性を反転させてダミークロックを生成する。;
+    /// ESP32-C3 and S3 cannot send/receive 1 bit, so invert CPOL polarity to generate a dummy clock.;
     if (dummy_bits == 1)
     {
       auto pin_reg = reg(SPI_PIN_REG(_spi_port));
@@ -1027,7 +1027,7 @@ label_start:
       set_read_len(len1 << 3);
       exec_spi();
 
-/// ESP32-C3 で HIGHPART を使用すると異常動作するため分岐する;
+/// Using HIGHPART on ESP32-C3 causes abnormal behavior, so branch here;
 #if defined ( SPI_UPDATE )  // for C3/S3
 
       auto spi_w0_reg = _spi_w0_reg;
@@ -1098,7 +1098,7 @@ label_start:
     int32_t dstindex = 0;
     auto spi_w0_reg = _spi_w0_reg;
 
-/// ESP32-C3 で HIGHPART を使用すると異常動作するため分岐する;
+/// Using HIGHPART on ESP32-C3 causes abnormal behavior, so branch here;
 #if defined ( SPI_UPDATE )  // for C3/S3
 
     do {

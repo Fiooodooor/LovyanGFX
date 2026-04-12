@@ -129,13 +129,13 @@ namespace lgfx
       else     { dc_l(); }
     }
 
-    // FIFOを8bitモードにする。
+    // Set FIFO to 8-bit mode.
     __attribute__ ((always_inline)) void set_dss_8()
     {
       _spi_regs->cr0 = _sspcr0_mask_8bit;
     }
 
-    // FIFOを16bitモードにする。
+    // Set FIFO to 16-bit mode.
     __attribute__ ((always_inline)) void set_dss_16()
     {
       _spi_regs->cr0 = _sspcr0_mask_16bit;
@@ -143,7 +143,7 @@ namespace lgfx
     
     __attribute__ ((always_inline)) inline void clear_rx_fifo()
     {
-      // FIFO内のデータをすべて読みだす
+      // Read all data from the FIFO
       while (is_rx_fifo_not_empty())
       {
         static_cast<void>(_spi_regs->dr);

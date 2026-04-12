@@ -62,7 +62,7 @@ namespace lgfx
     bool _in_transaction = false;
     uint8_t _cmd_nop = CMD_NOP;
     uint8_t _cmd_ramrd = CMD_RAMRD;
-    bool _nop_closing = true; // トランザクション終了時にnopを送るか否か
+    bool _nop_closing = true; // Whether to send NOP at end of transaction
 
     enum mad_t
     { MAD_MY  = 0x80
@@ -136,7 +136,7 @@ namespace lgfx
 
     virtual uint8_t getColMod(uint8_t bpp) const { return (bpp > 16) ? RGB888_3BYTE : RGB565_2BYTE; }
 
-    /// 引数に応じて _write_depth と _read_depth を設定する。_read_depthはドライバによってrgb888_3Byte固定のものや_write_depthと同じなるものがある。違いに注意が必要。;
+    /// Sets _write_depth and _read_depth according to the argument. Note that _read_depth may be fixed to rgb888_3Byte or equal to _write_depth depending on the driver.;
     virtual void setColorDepth_impl(color_depth_t depth) { _write_depth = ((int)depth & color_depth_t::bit_mask) > 16 ? rgb888_3Byte : rgb565_2Byte; _read_depth = rgb888_3Byte; }
 //  virtual void setColorDepth_impl(color_depth_t depth) { _write_depth = ((int)depth & color_depth_t::bit_mask) > 16 ? rgb888_3Byte : rgb565_2Byte; _read_depth = _write_depth; }
   };

@@ -53,9 +53,9 @@ namespace lgfx
 
   struct LGFX : public LGFX_Device
   {
-    LGFX(void) // コンストラクタ内で定義を行う
+    LGFX(void) // Perform definitions within the constructor
     {
-      panel(&_panel_instance);      // 使用するパネルを指定する
+      panel(&_panel_instance);      // Specify the panel to use
     }
 
   private:

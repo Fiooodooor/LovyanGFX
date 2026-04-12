@@ -449,7 +449,7 @@ namespace lgfx
     {
       uint8_t *bitmap_ = &this->bitmap[pgm_read_dword(&glyph_->bitmapOffset)];
       uint_fast8_t mask = 0x80;
-      int32_t btmp = pgm_read_byte(bitmap_); /// btmpの最上位ビット (符号ビット) をフラグとして扱うため敢えて uintにしない ;
+      int32_t btmp = pgm_read_byte(bitmap_); /// Intentionally not using uint because the MSB (sign bit) of btmp is used as a flag ;
       if (btmp & mask) { btmp = ~btmp; }
       uint32_t bitlen = 0;
 
@@ -479,22 +479,22 @@ namespace lgfx
           {
             btmp = ~btmp;
             do
-            { /// ビット連続数を取得するループ;
+            { /// Loop to get the count of consecutive bits;
               do
               {
                 ++bitlen;
 
-                /// 1Byteぶん走査できたら次のデータを取得する。;
+                /// Get the next data after scanning one full byte.;
                 if (0 == (mask >>= 1))
                 {
                   goto label_nextbyte;
-/// gotoを使用してループ外に出る理由は速度向上のため。連続ループ時にループ内の処理を短くする効果がある;
-/// 「データ取得が必要な場合」にgotoジャンプさせることにより、「データ取得が不要な場合」はジャンプが不要になる。;
+/// The reason for using goto to exit the loop is for speed improvement. It shortens the processing inside the loop during consecutive iterations;
+/// By using a goto jump for "the case where data retrieval is needed", the jump becomes unnecessary for "the case where data retrieval is not needed".;
                 }
               } while (btmp & mask);
-              break; /// ビットが途切れた場合はループを抜ける;
+              break; /// Break out of loop when the bit sequence is interrupted;
 
-label_nextbyte: /// 次のデータを取得する;
+label_nextbyte: /// Get the next data;
               mask = 0x80;
               btmp = pgm_read_byte(++bitmap_) ^ (btmp < 0 ? ~0 : 0);
             } while (btmp & mask);

@@ -79,11 +79,11 @@ namespace lgfx
   #define MEMCPY_BEGIN()
   #define MEMCPY_END()
 
-  // PSRAM使用時、表示内容を先行してSRAMにmemcpyするためのクラス;
+  // Class for pre-copying display contents to SRAM via memcpy when using PSRAM;
   class scanline_cache_t
   {
   public:
-    static constexpr size_t cache_num = 8;  // 先読み保持可能なデータ数;
+    static constexpr size_t cache_num = 8;  // Number of prefetch-cacheable data entries;
 
     int prev_index;
 
@@ -155,12 +155,12 @@ namespace lgfx
     }
 
   private:
-    uint8_t* _buffer = nullptr;    // 先読みバッファ(memcpy先アドレス)
-    const uint8_t* _src[cache_num] = { nullptr }; // キューアドレス(memcpy元アドレス)
+    uint8_t* _buffer = nullptr;    // Prefetch buffer (memcpy destination address)
+    const uint8_t* _src[cache_num] = { nullptr }; // Queue addresses (memcpy source addresses)
     TaskHandle_t _task_handle = nullptr;
-    size_t _datasize;     // データサイズ(memcpyする量)
-    uint8_t _push_idx;    // 新規予約代入先インデクス;
-    uint8_t _using_idx;   // 使用中インデクス;
+    size_t _datasize;     // Data size (amount to memcpy)
+    uint8_t _push_idx;    // Index for new reservation assignment destination;
+    uint8_t _using_idx;   // Currently in-use index;
 
     static void task_memcpy(void* args)
     { /// memcpy from PSRAM to SRAM task;
@@ -188,11 +188,11 @@ namespace lgfx
   struct internal_t
   {
     static constexpr const uint8_t dma_desc_count = 2;
-    uint8_t** lines = nullptr;        // フレームバッファ配列ポインタ;
-    uint16_t* allocated_list = nullptr;  // フレームバッファのalloc割当対象のインデクス番号(free時に使用);
-    uint32_t* palette = nullptr;   // RGB332から波形に変換するためのテーブル;
+    uint8_t** lines = nullptr;        // Frame buffer array pointer;
+    uint16_t* allocated_list = nullptr;  // Index numbers of allocated frame buffer entries (used when freeing);
+    uint32_t* palette = nullptr;   // Lookup table for converting RGB332 to waveform data;
     void (*fp_blit)(uint32_t*, const uint8_t*, const uint8_t*, const uint32_t*, int, int);
-    uint32_t burst_wave[2];       // カラーバースト信号の波形データ(EVENとODDで２通り)
+    uint32_t burst_wave[2];       // Color burst signal waveform data (two variants for EVEN and ODD)
     intr_handle_t isr_handle = nullptr;
     lldesc_t dma_desc[dma_desc_count];
     int32_t mul_ratio = 0;
@@ -206,8 +206,8 @@ namespace lgfx
     uint16_t BLANKING_LEVEL;
     uint16_t BLACK_LEVEL;
     uint16_t WHITE_LEVEL;
-    uint8_t burst_shift = 0;        // カラーバースト信号の反転・位相ずらし処理状態保持用;
-    uint8_t use_psram = 0;          // フレームバッファ PSRAM使用モード 0=不使用 / 1=半分PSRAM / 2=全部PSRAM
+    uint8_t burst_shift = 0;        // State holder for color burst signal inversion and phase shift processing;
+    uint8_t use_psram = 0;          // Frame buffer PSRAM usage mode: 0=unused / 1=half PSRAM / 2=all PSRAM
     uint8_t pixel_per_bytes = 1;
     static constexpr uint8_t SYNC_LEVEL = 0;
   };
@@ -218,10 +218,10 @@ namespace lgfx
 
   static uint32_t setup_palette_ntsc_inner(uint32_t rgb, uint32_t diff_level, uint32_t base_level, float satuation_base, float chroma_scale)
   {
-// NTSCの I・Q信号は基準位相から-147度ずれている。;
-// 加えて、このライブラリのburst_waveの位相基準は-45度となっている。;
-// この両者を合わせて 147+45=192 を引いた値が基準位相となる。;
-// つまり 360-192 = 168度を基準とする。;
+// The NTSC I/Q signals are offset by -147 degrees from the reference phase.;
+// Additionally, this library's burst_wave phase reference is -45 degrees.;
+// Combining both, subtracting 147+45=192 gives the reference phase.;
+// That is, 360-192 = 168 degrees is used as the base.;
     static constexpr float BASE_RAD = (M_PI * 168) / 180; // 2.932153;
 
     uint32_t r = rgb >> 16;
@@ -248,7 +248,7 @@ namespace lgfx
       tmp >>= 8;
       buf[j] = tmp < 0 ? 0 : tmp > 255 ? 255 : tmp;
     }
-    // 切り捨てた端数分を補正する
+    // Compensate for truncated fractional parts
     while (frac_total > 128)
     {
       frac_total -= 256;
@@ -264,7 +264,7 @@ namespace lgfx
       buf[target_idx]++;
       frac[target_idx] = 0;
     }
-    // I2Sに渡す際に処理負荷を軽減できるよう、予めバイトスワップ等を行ったテーブルを作成しておく;
+    // Pre-create a byte-swapped table to reduce processing load when passing to I2S;
     return buf[0] << 24
           | buf[1] <<  8
           | buf[2] << 16
@@ -281,14 +281,14 @@ namespace lgfx
     uint32_t base_level = black_level / 2;
     for (int idx = 0; idx < 256; ++idx)
     {
-      { // RGB565の上位1Byteに対するテーブル
+      { // Table for the upper byte of RGB565
         int r = (idx >> 3);
         int g = (idx & 7) << 3;
         r = (r * 0x21) >> 2;
         g = (g * 0x41) >> 4;
         palette[idx << 1] = setup_palette_ntsc_inner(r<<16|g<<8, diff_level, base_level, satuation_base, chroma_scale);
       }
-      { // RGB565の下位1Byteに対するテーブル
+      { // Table for the lower byte of RGB565
         int g = idx >> 5;
         int b = idx & 0x1F;
         b = (b * 0x21) >> 2;
@@ -330,7 +330,7 @@ namespace lgfx
   {
     static constexpr const int8_t sin_tbl[5] = { 0, -1, 0, 1, 0 };
 
-    // I2Sに渡す際に処理負荷を軽減できるよう、予めバイトスワップされたテーブルを作成するため、インデクス順を入れ替える
+    // Rearrange index order to create a pre-byte-swapped table for reducing processing load when passing to I2S
     static constexpr const int8_t idx_tbl[4] = { 3, 1, 2, 0 };
     uint32_t r = rgb >> 16;
     uint32_t g = (rgb >> 8) & 0xFF;
@@ -364,7 +364,7 @@ namespace lgfx
       result[i] = tmp < 0 ? 0 : tmp > 255 ? 255 : tmp;
     }
 
-    // 切り捨てた端数分を補正する
+    // Compensate for truncated fractional parts
     for (int i = 0; i < 2; ++i) {
       while (frac_total[i] > 128)
       {
@@ -395,7 +395,7 @@ namespace lgfx
     float base_level = (float)black_level / 2;
     for (int idx = 0; idx < 256; ++idx)
     {
-      { // RGB565の上位1Byteに対するテーブル
+      { // Table for the upper byte of RGB565
         int r = (idx >> 3);
         int g = (idx & 7) << 3;
         r = (r * 0x21) >> 2;
@@ -405,7 +405,7 @@ namespace lgfx
         e[idx << 1] = result_buf[0];
         o[idx << 1] = result_buf[1];
       }
-      { // RGB565の下位1Byteに対するテーブル
+      { // Table for the lower byte of RGB565
         int g = idx >> 5;
         int b = idx & 0x1F;
         b = (b * 0x21) >> 2;
@@ -465,34 +465,34 @@ namespace lgfx
   struct signal_spec_info_t
   {
     static constexpr const size_t sync_proc_count = 12;
-    uint16_t total_scanlines;     // 走査線数(２フィールド、１フレーム);
-    uint16_t scanline_width;      // 走査線内のサンプル数 (カラークロック数 x4);
-    uint8_t hsync_equalizing;     // 等化パルス幅;
-    uint8_t hsync_short;          // 水平同期期間のSYNC幅;
-    uint16_t hsync_long;          // 垂直同期期間のSYNC幅;
+    uint16_t total_scanlines;     // Number of scanlines (2 fields, 1 frame);
+    uint16_t scanline_width;      // Number of samples per scanline (color clock count x4);
+    uint8_t hsync_equalizing;     // Equalizing pulse width;
+    uint8_t hsync_short;          // SYNC width during horizontal sync period;
+    uint16_t hsync_long;          // SYNC width during vertical sync period;
     uint8_t burst_start;
-    uint8_t burst_cycle;          // バースト信号の数;
+    uint8_t burst_cycle;          // Number of burst signal cycles;
     uint8_t active_start;
     uint8_t burst_shift_mask;
-    uint16_t display_width;       // X方向 表示可能ピクセル数;
-    uint16_t display_height;      // Y方向 表示可能ピクセル数;
-    uint8_t sync_proc[2][sync_proc_count];     // 垂直同期期間の処理内容テーブル 偶数行・奇数行で2要素,各要素12ライン分;
-    uint8_t vsync_lines;          // 垂直同期期間(表示期間外)の走査線数(単フィールド分)
+    uint16_t display_width;       // Number of displayable pixels in X direction;
+    uint16_t display_height;      // Number of displayable pixels in Y direction;
+    uint8_t sync_proc[2][sync_proc_count];     // Vertical sync period processing table: 2 elements for even/odd lines, 12 lines each;
+    uint8_t vsync_lines;          // Number of scanlines in vertical sync period (non-display, single field)
   };
 
   static signal_spec_info_t _signal_spec_info;
 
   static constexpr const signal_spec_info_t signal_spec_info_list[]
   { // NTSC
-    { 525         // 走査線525本;
-    , 910         // 1走査線あたり 227.5 x4 sample
+    { 525         // 525 scanlines;
+    , 910         // 227.5 x4 samples per scanline
     , 32          // equalizing = 32 sample (2.3us)
     , 66          // hsync_short = 66 sample (4.7us)
     , 380         // hsync_long = 380 sample
     , 76          // burst start = 76 sample
     , 9           // burst cycle = 9 cycle
     , 148         // active_start = 148 sample (10.8us)
-    , 2           // burst_shift_mask バースト信号反転動作;
+    , 2           // burst_shift_mask burst signal inversion behavior;
     , 720         // width max 720
     , 480         // height max 480
     , { { 0x55, 0x55, 0x00, 0x22, 0x22, 0x00, 0x55, 0x55, 0x00, 0xB0, 0xB0, 0x00 } // NTSC EVEN
@@ -501,15 +501,15 @@ namespace lgfx
     , 22
     }
   , // NTSC_J
-    { 525         // 走査線525本;
-    , 910         // 1走査線あたり 227.5 x4 sample
+    { 525         // 525 scanlines;
+    , 910         // 227.5 x4 samples per scanline
     , 32          // equalizing = 32 sample (2.3us)
     , 66          // hsync_short = 66 sample (4.7us)
     , 380         // hsync_long = 380 sample
     , 76          // burst start = 76 sample
     , 9           // burst cycle = 9 cycle
     , 148         // active_start = 148 sample (10.8us)
-    , 2           // burst_shift_mask バースト信号反転動作;
+    , 2           // burst_shift_mask burst signal inversion behavior;
     , 720         // width max 720
     , 480         // height max 480
     , { { 0x55, 0x55, 0x00, 0x22, 0x22, 0x00, 0x55, 0x55, 0x00, 0xB0, 0xB0, 0x00 } // NTSC EVEN
@@ -519,15 +519,15 @@ namespace lgfx
     , 22
     }
   , // PAL
-    { 625         // 走査線625本;
-    , 1136        // 1走査線あたり 284 x4 sample (正確には283.75x4 = 1135だが、2の倍数でないとI2S出力できないため1136とする)
+    { 625         // 625 scanlines;
+    , 1136        // 284 x4 samples per scanline (precisely 283.75x4 = 1135, but set to 1136 since I2S output requires an even number)
     , 40          // equalizing = 40 sample (2.3us)
     , 84          // hsync_shor = 84 sample (4.7us)
     , 484         // hsync_long 484 sample
     , 98          // burst start = 98 sample (5.6us)
     , 10          // burst cycle = 10 cycle
     , 216         // active_start = 216 sample (12.0us)
-    , 1           // burst_shift_mask パレットインデクス変更動作;
+    , 1           // burst_shift_mask palette index change behavior;
     , 864         // max width 864
     , 576         // max height 576
     , { { 0x05, 0x55, 0x50, 0x22, 0x22, 0x05, 0x55, 0x50, 0x34, 0xB0, 0xB0, 0x00 } // PAL EVEN
@@ -535,16 +535,16 @@ namespace lgfx
       }
     , 25
     }
-  , // PAL_M  (PAL_M方式は周波数等がNTSCと共通、カラー情報の仕様がPALと共通)
-    { 525         // 走査線525本;
-    , 908         // 1走査線あたり 227.5 x4 sample
+  , // PAL_M  (PAL_M shares frequency etc. with NTSC, and color information spec with PAL)
+    { 525         // 525 scanlines;
+    , 908         // 227.5 x4 samples per scanline
     , 32          // equalizing = 32 sample (2.3us)
     , 66          // hsync_short = 66 sample (4.7us)
     , 380         // hsync_long = 380 sample
     , 80          // burst start = 84 sample
     , 9           // burst cycle = 9 cycle
     , 148         // active_start = 148 sample (10.8us)
-    , 1           // burst_shift_mask パレットインデクス変更動作;
+    , 1           // burst_shift_mask palette index change behavior;
     , 720         // width max 720
     , 480         // height max 480
     , { { 0x55, 0x55, 0x00, 0x22, 0x22, 0x00, 0x55, 0x55, 0x00, 0xB0, 0xB0, 0x00 } // NTSC EVEN
@@ -553,7 +553,7 @@ namespace lgfx
     , 22
     }
   , // PAL_N
-    { 625         // 走査線625本;
+    { 625         // 625 scanlines;
     , 916
     , 32
     , 66
@@ -561,7 +561,7 @@ namespace lgfx
     , 80
     , 9           // burst cycle = 9 cycle
     , 156
-    , 1           // burst_shift_mask パレットインデクス変更動作;
+    , 1           // burst_shift_mask palette index change behavior;
     , 720         // max width 720
     , 576         // max height 576
     , { { 0x05, 0x55, 0x50, 0x22, 0x22, 0x05, 0x55, 0x50, 0x34, 0xB0, 0xB0, 0x00 } // PAL EVEN
@@ -573,13 +573,13 @@ namespace lgfx
 
   struct signal_setup_info_t
   {
-    void (*setup_palette_332)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // RGB332用パレット生成関数のポインタ;
-    void (*setup_palette_565)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // RGB565用パレット生成関数のポインタ;
-    void (*setup_palette_gray)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // グレースケール用パレット生成関数のポインタ;
-    uint16_t blanking_mv;         // SYNCレベルとBLANKINGレベルの電圧差 mV
-    uint16_t black_mv;            // SYNCレベルと黒レベルの電圧差 mV
-    uint16_t white_mv;            // SYNCレベルと白レベルの電圧差 mV
-    uint8_t palette_num_256;      // パレット面数 (palはODD_EVENで2倍使用する);
+    void (*setup_palette_332)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // Pointer to palette generation function for RGB332;
+    void (*setup_palette_565)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // Pointer to palette generation function for RGB565;
+    void (*setup_palette_gray)(uint32_t*, uint_fast16_t, uint_fast16_t, uint_fast8_t); // Pointer to palette generation function for grayscale;
+    uint16_t blanking_mv;         // Voltage difference between SYNC level and BLANKING level in mV
+    uint16_t black_mv;            // Voltage difference between SYNC level and black level in mV
+    uint16_t white_mv;            // Voltage difference between SYNC level and white level in mV
+    uint8_t palette_num_256;      // Number of palette planes (PAL uses 2x for ODD/EVEN);
     uint8_t sdm0;
     uint8_t sdm1;
     uint8_t sdm2;
@@ -602,13 +602,13 @@ namespace lgfx
     , setup_palette_ntsc_565
     , setup_palette_ntsc_gray
     , 286         // 286mV = 0IRE
-    , 340         // 340mV = 7.5IRE  米国仕様では黒レベルは 7.5IRE
-    , 960         // 960mV  黄色の振幅の最大値が100IRE付近になるよう、白レベルは100IREよりも低く調整しておく;
-    , 1           // パレット数は256
-    // APLL設定 14.318237 映像に縞模様ノイズが出にくい;
-    //  意図的に要求仕様を外している。 ( 0x049746 = 14.318181 = 3.579545 x4 // 要求仕様に近い )
+    , 340         // 340mV = 7.5IRE  In US spec, black level is 7.5IRE
+    , 960         // 960mV  White level is adjusted lower than 100IRE so that the max amplitude of yellow is near 100IRE;
+    , 1           // Number of palettes is 256
+    // APLL setting 14.318237 - less prone to stripe pattern noise in video;
+    //  Intentionally deviating from the required spec. ( 0x049746 = 14.318181 = 3.579545 x4 // closer to required spec )
     , 0x48, 0x97, 0x04
-    // CLKDIV設定 (ESP32 rev0用)
+    // CLKDIV setting (for ESP32 rev0)
     , 5, 10, 17
     }
   , // NTSC_J
@@ -616,13 +616,13 @@ namespace lgfx
     , setup_palette_ntsc_565
     , setup_palette_ntsc_gray
     , 286         // 286mV = 0IRE
-    , 286         // 286mV = 0IRE  日本仕様では黒レベルは 0IRE
+    , 286         // 286mV = 0IRE  In Japan spec, black level is 0IRE
     , 960
-    , 1           // パレット数は256
-    // APLL設定 14.318237 映像に縞模様ノイズが出にくい;
-    //  意図的に要求仕様を外している。 ( 0x049746 = 14.318181 = 3.579545 x4 // 要求仕様に近い )
+    , 1           // Number of palettes is 256
+    // APLL setting 14.318237 - less prone to stripe pattern noise in video;
+    //  Intentionally deviating from the required spec. ( 0x049746 = 14.318181 = 3.579545 x4 // closer to required spec )
     , 0x48, 0x97, 0x04
-    // CLKDIV設定 (ESP32 rev0用)
+    // CLKDIV setting (for ESP32 rev0)
     , 5, 10, 17
     }
   , // PAL
@@ -632,10 +632,10 @@ namespace lgfx
     , 300
     , 300
     , 960
-    , 2           // パレット数は512
-    // APLL設定 17.734476mhz ~4x   4.43361875 x4
+    , 2           // Number of palettes is 512
+    // APLL setting 17.734476mhz ~4x   4.43361875 x4
     , 0x04, 0xA4, 0x06
-    // CLKDIV設定 (ESP32 rev0用)
+    // CLKDIV setting (for ESP32 rev0)
     , 4, 24, 47
     }
   , // PAL_M
@@ -645,10 +645,10 @@ namespace lgfx
     , 300
     , 300
     , 960
-    , 2           // パレット数は512
-    // APLL設定
+    , 2           // Number of palettes is 512
+    // APLL setting
     , 0xDA, 0x94, 0x04
-    // CLKDIV設定 (ESP32 rev0用)
+    // CLKDIV setting (for ESP32 rev0)
     , 5, 19, 32
     }
   , // PAL_N
@@ -658,17 +658,17 @@ namespace lgfx
     , 300
     , 300
     , 960
-    , 2           // パレット数は512
-    // APLL設定 // 3.58205625 x4
+    , 2           // Number of palettes is 512
+    // APLL setting // 3.58205625 x4
     , 0xD1, 0x98, 0x04
-    // CLKDIV設定 (ESP32 rev0用)
+    // CLKDIV setting (for ESP32 rev0)
     , 5, 7, 12
     }
   };
 
 #if 1  // 1:asm / 0:cpp   switch
 
-// a6 = シフト量反転 SARレジスタと入替、シフト量を 8 or 0 で変化させる
+// a6 = Inverted shift amount, swapped with SAR register, shift amount varies between 8 or 0
 // a9 = ratio diff
 #define ASM_INIT_BLIT \
     "ssl        a6                      \n" \
@@ -750,18 +750,18 @@ namespace lgfx
 
 
 
-/* blit_関数が呼び出された直後のレジスタの値
-    a0 : リターンアドレス     (使用しない)
-    a1 : スタックポインタ     (変更不可)
-    a2 : uint32_t d           (ループ中で加算しながら利用する)
-    a3 : const uint8_t* s     (ループ中で加算しながら利用する)
-    a4 : size_t src_length    (ループ回数として設定後、別用途に利用)
-    a5 : const uint32_t* p    (変更せずそのまま利用する)
-    a6 : int32_t odd          (そのまま利用する)
-    a7 : int32_t ratio        (変更せずそのまま利用する)
+/* Register values immediately after blit_ function is called
+    a0 : return address        (not used)
+    a1 : stack pointer         (must not be changed)
+    a2 : uint32_t d            (used with increments during loop)
+    a3 : const uint8_t* s      (used with increments during loop)
+    a4 : size_t src_length     (set as loop count, then used for other purposes)
+    a5 : const uint32_t* p     (used as-is without modification)
+    a6 : int32_t odd           (used as-is)
+    a7 : int32_t ratio         (used as-is without modification)
 //
     a8 : - ratio - 32768
-    a9 : diff                 比率判定用に利用
+    a9 : diff                  used for ratio comparison
 */
 
   // x5 ~ x6
@@ -773,30 +773,30 @@ namespace lgfx
     ASM_READ_RGB565_2PIXEL
 
     "sll        a12,a10                 \n"
-    "s32i       a12,a2, 0               \n" // 0,1 保存
-    "s32i       a12,a2, 8               \n" // 4,5 保存
+    "s32i       a12,a2, 0               \n" // 0,1 save
+    "s32i       a12,a2, 8               \n" // 4,5 save
     "sll        a13,a11                 \n"
-    "s32i       a13,a2, 16              \n" // 8,9 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a13,a2, 16              \n" // 8,9 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a15,a11                 \n"
-    "s32i       a15,a2, 12              \n" // 6,7 保存
+    "s32i       a15,a2, 12              \n" // 6,7 save
     "bgez       a9, BGEZ_x50_x60_565    \n"
-// diffがマイナスの時の処理 x5.0
-    "s16i       a13,a2, 8               \n" //   5 保存
+// Processing when diff is negative x5.0
+    "s16i       a13,a2, 8               \n" //   5 save
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 5*4             \n" // 出力先 += 5 * sizeof(uint32_t)
+    "addi       a2, a2, 5*4             \n" // output dest += 5 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x50_x60_565\n"
     "retw                               \n"
 
 "BGEZ_x50_x60_565:                  \n"
-// diffがプラスの時の処理 x6.0
-    "s32i       a15,a2, 20              \n" // 10,11 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x6.0
+    "s32i       a15,a2, 20              \n" // 10,11 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 6*4             \n" // 出力先 += 6 * sizeof(uint32_t)
+    "addi       a2, a2, 6*4             \n" // output dest += 6 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x50_x60_565\n"
     );
   }
@@ -810,30 +810,30 @@ namespace lgfx
     ASM_READ_RGB332_2PIXEL
 
     "sll        a12,a10                 \n"
-    "s32i       a12,a2, 0               \n" // 0,1 保存
-    "s32i       a12,a2, 8               \n" // 4,5 保存
+    "s32i       a12,a2, 0               \n" // 0,1 save
+    "s32i       a12,a2, 8               \n" // 4,5 save
     "sll        a13,a11                 \n"
-    "s32i       a13,a2, 16              \n" // 8,9 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a13,a2, 16              \n" // 8,9 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a15,a11                 \n"
-    "s32i       a15,a2, 12              \n" // 6,7 保存
+    "s32i       a15,a2, 12              \n" // 6,7 save
     "bgez       a9, BGEZ_x50_x60_332    \n"
-// diffがマイナスの時の処理 x5.0
-    "s16i       a13,a2, 8               \n" //   5 保存
+// Processing when diff is negative x5.0
+    "s16i       a13,a2, 8               \n" //   5 save
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 5*4             \n" // 出力先 += 5 * sizeof(uint32_t)
+    "addi       a2, a2, 5*4             \n" // output dest += 5 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x50_x60_332\n"
     "retw                               \n"
 
 "BGEZ_x50_x60_332:                  \n"
-// diffがプラスの時の処理 x6.0
-    "s32i       a15,a2, 20              \n" // 10,11 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x6.0
+    "s32i       a15,a2, 20              \n" // 10,11 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 6*4             \n" // 出力先 += 6 * sizeof(uint32_t)
+    "addi       a2, a2, 6*4             \n" // output dest += 6 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x50_x60_332\n"
     );
   }
@@ -847,30 +847,30 @@ namespace lgfx
     ASM_READ_RGB565_2PIXEL
 
     "sll        a12,a10                 \n"
-    "s32i       a12,a2, 0               \n" // 0,1 保存
+    "s32i       a12,a2, 0               \n" // 0,1 save
     "sll        a13,a11                 \n"
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a15,a11                 \n"
-    "s32i       a15,a2, 12              \n" // 6,7 保存
+    "s32i       a15,a2, 12              \n" // 6,7 save
 
     "bgez       a9, BGEZ_x40_x50_565    \n"
-// diffがマイナスの時の処理 x4.0
-    "s32i       a13,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is negative x4.0
+    "s32i       a13,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x40_x50_565\n"
     "retw                               \n"
 
 "BGEZ_x40_x50_565:                  \n"
-// diffがプラスの時の処理 x5.0
-    "s32i       a12,a2, 8               \n" // 4,5 保存
-    "s32i       a13,a2, 16              \n" // 8,9 保存
-    "s16i       a13,a2, 8               \n" //   5 保存
+// Processing when diff is positive x5.0
+    "s32i       a12,a2, 8               \n" // 4,5 save
+    "s32i       a13,a2, 16              \n" // 8,9 save
+    "s16i       a13,a2, 8               \n" //   5 save
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 5*4             \n" // 出力先 += 5 * sizeof(uint32_t)
+    "addi       a2, a2, 5*4             \n" // output dest += 5 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x40_x50_565\n"
     );
   }
@@ -884,30 +884,30 @@ namespace lgfx
     ASM_READ_RGB332_2PIXEL
 
     "sll        a12,a10                 \n"
-    "s32i       a12,a2, 0               \n" // 0,1 保存
+    "s32i       a12,a2, 0               \n" // 0,1 save
     "sll        a13,a11                 \n"
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a15,a11                 \n"
-    "s32i       a15,a2, 12              \n" // 6,7 保存
+    "s32i       a15,a2, 12              \n" // 6,7 save
 
     "bgez       a9, BGEZ_x40_x50_332    \n"
-// diffがマイナスの時の処理 x4.0
-    "s32i       a13,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is negative x4.0
+    "s32i       a13,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x40_x50_332\n"
     "retw                               \n"
 
 "BGEZ_x40_x50_332:                  \n"
-// diffがプラスの時の処理 x5.0
-    "s32i       a12,a2, 8               \n" // 4,5 保存
-    "s32i       a13,a2, 16              \n" // 8,9 保存
-    "s16i       a13,a2, 8               \n" //   5 保存
+// Processing when diff is positive x5.0
+    "s32i       a12,a2, 8               \n" // 4,5 save
+    "s32i       a13,a2, 16              \n" // 8,9 save
+    "s16i       a13,a2, 8               \n" //   5 save
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 5*4             \n" // 出力先 += 5 * sizeof(uint32_t)
+    "addi       a2, a2, 5*4             \n" // output dest += 5 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x40_x50_332\n"
     );
   }
@@ -921,28 +921,28 @@ namespace lgfx
     ASM_READ_RGB565_2PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a11                 \n"
     "bgez       a9, BGEZ_x30_x40_565    \n"
-// diffがマイナスの時の処理 x3.0
-    "s16i       a14,a2, 4               \n" //   3 保存
+// Processing when diff is negative x3.0
+    "s16i       a14,a2, 4               \n" //   3 save
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x30_x40_565\n"
     "retw                               \n"
 
 "BGEZ_x30_x40_565:                  \n"
-// diffがプラスの時の処理 x4.0
-    "s32i       a14,a2, 12              \n" // 6,7 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x4.0
+    "s32i       a14,a2, 12              \n" // 6,7 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x30_x40_565\n"
     );
   }
@@ -956,28 +956,28 @@ namespace lgfx
     ASM_READ_RGB332_2PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a11                 \n"
     "bgez       a9, BGEZ_x30_x40_332    \n"
-// diffがマイナスの時の処理 x3.0
-    "s16i       a14,a2, 4               \n" //   3 保存
+// Processing when diff is negative x3.0
+    "s16i       a14,a2, 4               \n" //   3 save
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x30_x40_332\n"
     "retw                               \n"
 
 "BGEZ_x30_x40_332:                  \n"
-// diffがプラスの時の処理 x4.0
-    "s32i       a14,a2, 12              \n" // 6,7 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x4.0
+    "s32i       a14,a2, 12              \n" // 6,7 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x30_x40_332\n"
     );
   }
@@ -991,32 +991,32 @@ namespace lgfx
     ASM_READ_RGB565_2PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "bgez       a9, BGEZ_x20_x30_565    \n"
-// diffがマイナスの時の処理 x2.0
+// Processing when diff is negative x2.0
 
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 4               \n" // 2,3 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 2*4             \n" // 出力先 += 2 * sizeof(uint32_t)
+    "addi       a2, a2, 2*4             \n" // output dest += 2 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x20_x30_565\n"
     "retw                               \n"
 
 "BGEZ_x20_x30_565:                  \n"
-// diffがプラスの時の処理 x3.0
+// Processing when diff is positive x3.0
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a11                 \n" // a14 = !odd a10
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x20_x30_565\n"
     );
   }
@@ -1030,32 +1030,32 @@ namespace lgfx
     ASM_READ_RGB332_2PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "bgez       a9, BGEZ_x20_x30_332    \n"
-// diffがマイナスの時の処理 x2.0
+// Processing when diff is negative x2.0
 
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 4               \n" // 2,3 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 2*4             \n" // 出力先 += 2 * sizeof(uint32_t)
+    "addi       a2, a2, 2*4             \n" // output dest += 2 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x20_x30_332\n"
     "retw                               \n"
 
 "BGEZ_x20_x30_332:                  \n"
-// diffがプラスの時の処理 x3.0
+// Processing when diff is positive x3.0
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a11                 \n" // a14 = !odd a10
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x20_x30_332\n"
     );
   }
@@ -1069,36 +1069,36 @@ namespace lgfx
     ASM_READ_RGB565_4PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "sll        a14,a12                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
+    "s32i       a14,a2, 8               \n" // 4,5 save
 
     "bgez       a9, BGEZ_x15_x20_565    \n"
-// diffがマイナスの時の処理 x1.5
+// Processing when diff is negative x1.5
     "sll        a14,a13                 \n"
-    "s16i       a14,a2, 8               \n" //   5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 8               \n" //   5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a12                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x15_x20_565\n"
     "retw                               \n"
 
 "BGEZ_x15_x20_565:                  \n"
-// diffがプラスの時の処理 x2.0
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x2.0
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a13                 \n"
-    "s32i       a14,a2, 12              \n" // 6,7 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 12              \n" // 6,7 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x15_x20_565\n"
     );
   }
@@ -1112,36 +1112,36 @@ namespace lgfx
     ASM_READ_RGB332_4PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "sll        a14,a12                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
+    "s32i       a14,a2, 8               \n" // 4,5 save
 
     "bgez       a9, BGEZ_x15_x20_332    \n"
-// diffがマイナスの時の処理 x1.5
+// Processing when diff is negative x1.5
     "sll        a14,a13                 \n"
-    "s16i       a14,a2, 8               \n" //   5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 8               \n" //   5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a12                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x15_x20_332\n"
     "retw                               \n"
 
 "BGEZ_x15_x20_332:                  \n"
-// diffがプラスの時の処理 x2.0
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+// Processing when diff is positive x2.0
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2,3 保存
+    "s32i       a14,a2, 4               \n" // 2,3 save
     "sll        a14,a13                 \n"
-    "s32i       a14,a2, 12              \n" // 6,7 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 12              \n" // 6,7 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 4*4             \n" // 出力先 += 4 * sizeof(uint32_t)
+    "addi       a2, a2, 4*4             \n" // output dest += 4 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x15_x20_332\n"
     );
   }
@@ -1155,36 +1155,36 @@ namespace lgfx
     ASM_READ_RGB565_4PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "bgez       a9, BGEZ_x10_x15_565    \n"
-// diffがマイナスの時の処理 x1.0
+// Processing when diff is negative x1.0
 
     "sll        a14,a11                 \n"
-    "s16i       a14,a2, 0               \n" //   1 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 0               \n" //   1 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a12                 \n"
-    "s32i       a14,a2, 4               \n" // 2   保存
+    "s32i       a14,a2, 4               \n" // 2   save
     "sll        a14,a13                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 4               \n" //   3 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 2*4             \n" // 出力先 += 2 * sizeof(uint32_t)
+    "addi       a2, a2, 2*4             \n" // output dest += 2 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x10_x15_565\n"
     "retw                               \n"
 
 "BGEZ_x10_x15_565:                  \n"
-// diffがプラスの時の処理 x1.5
+// Processing when diff is positive x1.5
     "sll        a14,a13                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2   保存
+    "s32i       a14,a2, 4               \n" // 2   save
     "sll        a14,a12                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x10_x15_565\n"
     );
   }
@@ -1198,36 +1198,36 @@ namespace lgfx
     ASM_READ_RGB332_4PIXEL
 
     "sll        a14,a10                 \n"
-    "s32i       a14,a2, 0               \n" // 0,1 保存
+    "s32i       a14,a2, 0               \n" // 0,1 save
     "bgez       a9, BGEZ_x10_x15_332    \n"
-// diffがマイナスの時の処理 x1.0
+// Processing when diff is negative x1.0
 
     "sll        a14,a11                 \n"
-    "s16i       a14,a2, 0               \n" //   1 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 0               \n" //   1 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a12                 \n"
-    "s32i       a14,a2, 4               \n" // 2   保存
+    "s32i       a14,a2, 4               \n" // 2   save
     "sll        a14,a13                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s16i       a14,a2, 4               \n" //   3 save
+    "xsr        a6, SAR                 \n" // shift amount switch
 
     "add        a9, a9, a7              \n" // diff += ratio
-    "addi       a2, a2, 2*4             \n" // 出力先 += 2 * sizeof(uint32_t)
+    "addi       a2, a2, 2*4             \n" // output dest += 2 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x10_x15_332\n"
     "retw                               \n"
 
 "BGEZ_x10_x15_332:                  \n"
-// diffがプラスの時の処理 x1.5
+// Processing when diff is positive x1.5
     "sll        a14,a13                 \n"
-    "s32i       a14,a2, 8               \n" // 4,5 保存
-    "xsr        a6, SAR                 \n" // シフト量スイッチ
+    "s32i       a14,a2, 8               \n" // 4,5 save
+    "xsr        a6, SAR                 \n" // shift amount switch
     "sll        a14,a11                 \n"
-    "s32i       a14,a2, 4               \n" // 2   保存
+    "s32i       a14,a2, 4               \n" // 2   save
     "sll        a14,a12                 \n"
-    "s16i       a14,a2, 4               \n" //   3 保存
+    "s16i       a14,a2, 4               \n" //   3 save
 
     "addmi      a9, a9, -32768          \n" // diff -= 32768
-    "addi       a2, a2, 3*4             \n" // 出力先 += 3 * sizeof(uint32_t)
+    "addi       a2, a2, 3*4             \n" // output dest += 3 * sizeof(uint32_t)
     "bltu       a3, a4, LOOP_x10_x15_332\n"
     );
   }
@@ -1768,7 +1768,7 @@ namespace lgfx
 
 #endif
 
-  /// 引数のポインタアドレスがSRAMかどうか判定する  true=SRAM / false=not SRAM (e.g. PSRAM FlashROM) ;
+  /// Determine whether the pointer address in the argument is SRAM  true=SRAM / false=not SRAM (e.g. PSRAM FlashROM) ;
   static inline bool IRAM_ATTR isSRAM(const void* ptr)
   {
     return (((uintptr_t)ptr & 0x3FF00000u) == 0x3FF00000u);
@@ -1794,13 +1794,13 @@ namespace lgfx
       internal.current_scanline = 0;
     }
 
-    // インターレース込みでの走査線位置を取得;
+    // Get scanline position including interlacing;
     int i = internal.current_scanline;
-    // インターレースを外した走査線位置に変換する (奇数フィールドの場合に走査線位置が0基準になるように変換する)
+    // Convert to scanline position without interlacing (convert so that scanline position is 0-based for odd fields)
     bool odd_field = i >= (_signal_spec_info.total_scanlines >> 1);
     if (odd_field) { i -= (_signal_spec_info.total_scanlines >> 1); }
 
-    // getScanLine用の走査線位置を設定しておく;
+    // Set the scanline position for getScanLine;
     internal.converted_scanline = i;
 
     internal.burst_shift = internal.burst_shift ^ _signal_spec_info.burst_shift_mask;
@@ -1845,36 +1845,36 @@ namespace lgfx
       {
         auto sync_proc = _signal_spec_info.sync_proc[odd_field][i];
         size_t half_index = (_signal_spec_info.scanline_width >> 1);
-        if (sync_proc & 0x40)  // 水平期間前半のブランキングレベル化;
+        if (sync_proc & 0x40)  // Set first half of horizontal period to blanking level;
         {
           memset(buf, internal.BLANKING_LEVEL >> 8, half_index << 1);
           buf[(half_index - 1) ^ 1] = internal.BLANKING_LEVEL;
         }
-        if (sync_proc & 0x04)  // 水平期間後半のブランキングレベル化;
+        if (sync_proc & 0x04)  // Set second half of horizontal period to blanking level;
         {
           int blank_idx = (half_index + 1) & ~1u;
           memset(&buf[blank_idx], internal.BLANKING_LEVEL >> 8, (_signal_spec_info.scanline_width - blank_idx) << 1);
           buf[half_index ^ 1] = internal.BLANKING_LEVEL;
         }
-        if (sync_proc & 0x03) // 水平期間後半のパルス付与;
+        if (sync_proc & 0x03) // Apply pulse to second half of horizontal period;
         {
-          // 0x01=等化パルス幅  /  0x02=垂直同期パルス幅
+          // 0x01=equalizing pulse width  /  0x02=vertical sync pulse width
           int syncwidth = ((sync_proc & 0x01) ? _signal_spec_info.hsync_equalizing : _signal_spec_info.hsync_long);
           memset(&buf[((_signal_spec_info.scanline_width >> 1) + 1) & ~1u], internal.SYNC_LEVEL >> 8, syncwidth << 1);
           buf[(_signal_spec_info.scanline_width >> 1) ^ 1] = internal.SYNC_LEVEL;
         }
-        if (sync_proc & 0x30) // 水平期間前半のパルス付与;
+        if (sync_proc & 0x30) // Apply pulse to first half of horizontal period;
         {
-          int syncwidth = _signal_spec_info.hsync_equalizing;  // 等化パルス幅;
+          int syncwidth = _signal_spec_info.hsync_equalizing;  // Equalizing pulse width;
           switch ((sync_proc >> 4) & 3)
           {
-          case 2: syncwidth = _signal_spec_info.hsync_long;  break;   // 垂直同期パルス幅;
-          case 3: syncwidth = _signal_spec_info.hsync_short; break;   // 水平同期パルス幅;
+          case 2: syncwidth = _signal_spec_info.hsync_long;  break;   // Vertical sync pulse width;
+          case 3: syncwidth = _signal_spec_info.hsync_short; break;   // Horizontal sync pulse width;
           default: break;
           }
           memset(buf, internal.SYNC_LEVEL >> 8, syncwidth << 1);
         }
-        if (sync_proc & 0x80) // バースト信号付与;
+        if (sync_proc & 0x80) // Apply burst signal;
         {
           uint32_t b0 = internal.burst_wave[internal.burst_shift & 1];
           uint32_t b1 = b0 << 8;
@@ -2050,7 +2050,7 @@ namespace lgfx
     uint32_t pixelPerBytes = (getWriteDepth() & color_depth_t::bit_mask) >> 3;
     internal.pixel_per_bytes = pixelPerBytes;
 
-// 幅方向の解像度に関する準備 ;
+// Preparation for horizontal resolution ;
     {
       uint16_t output_width = std::min(_cfg.memory_width, spec_info.display_width);
       uint16_t panel_width = std::min(_cfg.panel_width , output_width);
@@ -2061,7 +2061,7 @@ namespace lgfx
       uint32_t scale_index = (spec_info.display_width << 1) / output_width;
       scale_index = (scale_index < 2 ? 2 : scale_index > 10 ? 10 : scale_index) - 2;
 
-      /// 表示倍率に応じて出力データ生成関数を変更する;
+      /// Change the output data generation function according to the display magnification;
       static constexpr void (*fp_tbl_332[])(uint32_t*, const uint8_t*, const uint8_t*, const uint32_t*, int, int) =
       {
         blit_x10_x15_332,
@@ -2087,8 +2087,8 @@ namespace lgfx
         blit_x50_x60_565
       };
 
-      /// 描画時の引き延ばし倍率テーブル (例:2=等倍  3=1.5倍  4=2倍)  上位4bitと下位4bitで２種類の倍率を指定する;
-      /// この２種類の倍率をデータ生成時に切り替えて任意サイズの出力倍率を実現する;
+      /// Scaling ratio table for rendering (e.g.: 2=1x  3=1.5x  4=2x)  Upper 4 bits and lower 4 bits specify two types of ratios;
+      /// These two types of ratios are switched during data generation to achieve arbitrary output magnification;
       static constexpr const uint8_t scale_tbl[] = { 0x23, 0x34, 0x46, 0x46, 0x68, 0x68, 0x8A, 0x8A, 0xAC };
       uint8_t scale_h = scale_tbl[scale_index];
       uint8_t scale_l = scale_h >> 4;
@@ -2096,7 +2096,7 @@ namespace lgfx
 
       internal.fp_blit = (pixelPerBytes == 1 ? fp_tbl_332 : fp_tbl_565)[scale_index];
 
-      /// 表示倍率の比率を求める;
+      /// Calculate the display magnification ratio;
       int32_t mul_ratio_h = spec_info.display_width - (output_width * scale_h / 2);
       int32_t mul_ratio_l = spec_info.display_width - (output_width * scale_l / 2);
       int32_t mul_ratio = INT32_MAX;
@@ -2106,7 +2106,7 @@ namespace lgfx
       }
       internal.mul_ratio = mul_ratio;
 
-      // Xオフセットに表示倍率を掛けたものを描画開始位置情報に加える
+      // Add the X offset multiplied by the display magnification to the draw start position
       int scale_offset = (offset_x * spec_info.display_width + output_width-1) / output_width;
 
       internal.leftside_index = (spec_info.active_start + scale_offset) & ~3u;
@@ -2140,10 +2140,10 @@ namespace lgfx
       _scanline_cache.begin(( internal.panel_width * pixelPerBytes + 4 ) & ~3, _config_detail.task_priority, _config_detail.task_pinned_core);
     }
 
-    size_t n = spec_info.scanline_width << 1;  // n=DMA 1回分のデータ量  最大値は4092;
+    size_t n = spec_info.scanline_width << 1;  // n=data amount for one DMA transfer  max value is 4092;
     size_t len = (n + 3) & ~3u;
 
-    uint8_t* dmabuf = (uint8_t*)heap_alloc_dma(len * internal.dma_desc_count);    // dma_descの個数分を纏めて確保しておく;
+    uint8_t* dmabuf = (uint8_t*)heap_alloc_dma(len * internal.dma_desc_count);    // Allocate all dma_desc entries together at once;
 // printf("dmabuf: %08x alloc\n", dmabuf);
     if (dmabuf == nullptr)
     {
@@ -2188,10 +2188,10 @@ namespace lgfx
     bool use_apll = true;
     #if defined ( CONFIG_IDF_TARGET_ESP32 ) || !defined ( CONFIG_IDF_TARGET )
     {
-      // ESP32 rev0 には APLLの設定値が正しく反映されないハードウェア不具合があるため、
-      // APLLを使用せずにI2Sのクロック分周設定で代用する。
-      // I2Sのクロック分周設定では要求仕様との誤差が大きくなる。
-      // そのため波打ったり色が乱れる事があるが、これを完全に解消することは不可能である。
+      // ESP32 rev0 has a hardware bug where APLL settings are not applied correctly,
+      // so I2S clock divider settings are used instead of APLL.
+      // The I2S clock divider settings have larger deviation from the required spec.
+      // This may cause wavy or distorted colors, but it is impossible to completely eliminate this.
       esp_chip_info_t chip_info;
       esp_chip_info(&chip_info);
       if (chip_info.revision == 0) { use_apll = false; }
@@ -2204,7 +2204,7 @@ namespace lgfx
     if (use_apll) {
 #if defined ( LGFX_I2S_STD_ENABLED )
       rtc_clk_apll_enable( true );
-      // 設定する前にapllをenableにしておく必要がある
+      // APLL must be enabled before configuring settings
       rtc_clk_apll_coeff_set( 1
                             , setup_info.sdm0
                             , setup_info.sdm1
@@ -2230,9 +2230,9 @@ namespace lgfx
     I2S0.conf.tx_reset = 1;
     I2S0.conf.tx_reset = 0;
 
-    /// 出力先のGPIOが25か26かでLEFT/RIGHTの出力順を変える。25==right / 26==left
-    /// first側の出力は綺麗に出るが、もう一方の出力は値が乱れる (ランダムに前の出力値のビットが半端に混ざった外れ値が出る事がある);
-    /// ゆえに出力先をfirstに設定しないと信号出力に外れ値ノイズが頻出することに注意;
+    /// Change LEFT/RIGHT output order depending on whether the output GPIO is 25 or 26. 25==right / 26==left
+    /// The first-side output is clean, but the other output has corrupted values (random bits from previous output values may partially mix in as outliers);
+    /// Therefore, note that if the output destination is not set to first, outlier noise will frequently appear in the signal output;
     I2S0.conf.tx_right_first = (_config_detail.pin_dac == 25);
     I2S0.conf.tx_mono = 1;
 
@@ -2388,8 +2388,8 @@ namespace lgfx
 
   static constexpr uint8_t linesPerChunk = 8;
   static inline int getIndexInterleave(int index)
-  { // メモリを2ライン単位で交互に使用するように、インデクスを変換する。;
-  // アルゴリズムを変更する場合はlinesPerChunkの値やdeinitと整合性を確認すること;
+  { // Convert the index so that memory is used alternately in 2-line units.;
+  // If changing the algorithm, verify consistency with the linesPerChunk value and deinit;
     int bit1_2 = index & 0x06u;
     int bit3 = index & 0x08u;
     return (index & ~0x0Eu) + (bit1_2 << 1) + (bit3 >> 2);

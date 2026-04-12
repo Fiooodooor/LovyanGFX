@@ -10,9 +10,9 @@ struct __attribute__((packed)) gsl_fw_data
 };
 
 /*
- ファームウェアの解像度情報は、PAGE 0x06 のレジスタ 0x24 と 0x28 から読み取ることができる。;
+ Firmware resolution information can be read from registers 0x24 and 0x28 of PAGE 0x06.;
 
-例 : 
+Example : 
 {0xf0,0x6},        // ← PAGE 0x06
 {0x00,0x0000000f},
 {0x04,0x00000000},

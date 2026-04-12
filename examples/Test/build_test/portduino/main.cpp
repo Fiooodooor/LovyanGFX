@@ -14,7 +14,7 @@ void setup()
 
   canvas.setColorDepth(8);
   canvas.setFont(&fonts::lgfxJapanMinchoP_32);
-  canvas.setTextWrap(false);        // 右端到達時のカーソル折り返しを禁止
+  canvas.setTextWrap(false);        // Disable cursor wrapping when reaching the right edge
   canvas.createSprite(display->width(), 36);
   canvas.clear();
   canvas.setCursor(0, 0);

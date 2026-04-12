@@ -137,7 +137,7 @@ namespace lgfx
     //_spi_dev->ops->exchange(_spi_dev, (uint8_t*)&data, nullptr, bit_length >> 3);
 
 //while ((spi_getreg(priv, CXD56_SPI_SR_OFFSET) & SPI_SR_TNF)
-    //while (!(*_spi_reg_sr & SPI_SR_TNF)) {} // 送信完了待ち
+    //while (!(*_spi_reg_sr & SPI_SR_TNF)) {} // Wait for transmission to complete
     *_spi_reg_dr = data;
     while (--bytes)
     {
@@ -154,7 +154,7 @@ namespace lgfx
     dc_h();
     //SPI.send((uint8_t*)&data, bit_length >> 3);
     //_spi_dev->ops->exchange(_spi_dev, (uint8_t*)&data, nullptr, bit_length >> 3);
-    //while (!(*_spi_reg_sr & SPI_SR_TNF)) {} // 送信完了待ち
+    //while (!(*_spi_reg_sr & SPI_SR_TNF)) {} // Wait for transmission to complete
     *_spi_reg_dr = data;
     while (--bytes)
     {

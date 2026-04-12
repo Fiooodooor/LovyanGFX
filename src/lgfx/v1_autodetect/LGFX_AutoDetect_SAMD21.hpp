@@ -247,7 +247,7 @@ namespace lgfx
 
       _board = board;
 
-      /// autodetectの際にreset済みなのでここではuse_resetをfalseで呼び出す。
+      /// Since reset was already performed during autodetect, call with use_reset set to false here.
       return LGFX_Device::init_impl(false, use_clear);
     }
 

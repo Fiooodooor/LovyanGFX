@@ -33,8 +33,8 @@ namespace lgfx
 
   static constexpr uint8_t Bayer[16] = { 8, 200, 40, 232, 72, 136, 104, 168, 56, 248, 24, 216, 120, 184, 88, 152 };
 
-  static constexpr uint8_t CMD_DEEP_SLEEP_MODE   = 0x10; // スリープの設定。スリープからの復帰にはハードウェアリセットが必要
-  static constexpr uint8_t CMD_MASTER_ACTIVATION = 0x20; // 画面の描画更新を実施する
+  static constexpr uint8_t CMD_DEEP_SLEEP_MODE   = 0x10; // Sleep setting. Hardware reset is required to wake from sleep
+  static constexpr uint8_t CMD_MASTER_ACTIVATION = 0x20; // Execute display drawing update
   static constexpr uint8_t CMD_DISPLAY_UPDATE_CONTROL_1 = 0x21;
   static constexpr uint8_t CMD_DISPLAY_UPDATE_CONTROL_2 = 0x22;
   static constexpr uint8_t CMD_WRITE_RAM_BW  = 0x24;
@@ -131,28 +131,28 @@ namespace lgfx
 
     bool flg_mode_changed = (_last_epd_mode != epd_mode);
 /*
-このEPDは内部にフレームバッファを2つ持ち、2通りの表示更新モードで使用方法が異なる。
-方法 1: フレーム バッファーを 1つのみ使用し、明暗を何度か反転させて更新する。 (epd_quality)
-方法 2: フレーム バッファーを 2つ交互に使用し、他方のバッファーとの差分のみを駆動する (上記以外のモード)
+This EPD has two internal frame buffers, and the usage differs between two display update modes.
+Method 1: Use only one frame buffer and update by inverting brightness several times. (epd_quality)
+Method 2: Use two frame buffers alternately and only drive the differences from the other buffer (modes other than the above)
 
-動作中にリフレッシュ方法を切り替えると、直後の描画が正しく行われなくなったり、表示が乱れたりする。
-そのため、現在どちらのフレームバッファを使用しているかをGFX側で推測し、モード変更直後に表示が崩れないように調整する必要がある。
+Switching refresh methods during operation may cause subsequent drawing to be incorrect or display corruption.
+Therefore, the GFX side needs to track which frame buffer is currently in use and adjust to prevent display corruption immediately after a mode change.
 
-epd_mode == epd_quality の場合、EPDは内部の2つのフレームバッファのうち最初のものだけを使用してフリッキング更新を行う。
-epd_mode != epd_quality の場合、EPDは内部の2つのフレームバッファを交互に使用し、他方との差分更新を行う。
-このため、EPDが現在どちらのフレームバッファを使用しているのかを把握しておく必要がある。
+When epd_mode == epd_quality, the EPD uses only the first of its two internal frame buffers to perform flickering update.
+When epd_mode != epd_quality, the EPD alternately uses its two internal frame buffers and performs differential update from the other.
+For this reason, it is necessary to keep track of which frame buffer the EPD is currently using.
 
-★epd_quality から他のモードに変更した場合
- 必ずフレームバッファ1番にデータが送信されるが、フレームバッファ2番の状態が不定のため正しく描画できない。
- そのためフレームバッファ1番に反転した描画を行い、直後にもう一度通常の描画を行う必要がある。
+* When changing from epd_quality to another mode
+ Data is always sent to frame buffer 1, but frame buffer 2 is in an undefined state so drawing cannot be done correctly.
+ Therefore, an inverted drawing must be performed on frame buffer 1, followed immediately by another normal drawing.
 
-★epd_quality以外のモードからepd_qualityモードに変更した場合
- どちらのフレームバッファに送信されるかは直前の状況による。
- フレームバッファ1番に送信される場合は何もしなくてよい。
- フレームバッファ2番に送信される場合は、モード変更前の状態で一度 描画更新をしておく必要がある。
+* When changing from a non-epd_quality mode to epd_quality mode
+ Which frame buffer receives data depends on the previous state.
+ If data is sent to frame buffer 1, no action is needed.
+ If data is sent to frame buffer 2, a drawing update must be performed in the pre-mode-change state first.
 
-リセット直後 (_initialize_seq == true) の場合は CMD_DISPLAY_UPDATE_CONTROL_2 を使ってEPDの起動処理が必要
-epd_mode が epd_qualityか否かの変化をした場合も同様にCMD_DISPLAY_UPDATE_CONTROL_2を使ってEPDのモード変更処理が必要
+After reset (_initialize_seq == true), CMD_DISPLAY_UPDATE_CONTROL_2 must be used to perform EPD startup processing
+Similarly, when epd_mode changes to/from epd_quality, CMD_DISPLAY_UPDATE_CONTROL_2 must be used to perform EPD mode change processing
 
 */
     if (_initialize_seq || flg_mode_changed)
@@ -167,7 +167,7 @@ epd_mode が epd_qualityか否かの変化をした場合も同様にCMD_DISPLAY
     // 0b00001100 = Display with DISPLAY Mode 2
     // 0b00000010 = Disable Analog
     // 0b00000001 = Disable clock signal
-    // epd_quality高品質モードではフリッキング更新を行う
+    // In epd_quality high-quality mode, perform flickering update
       _range_mod.left = 0;
       _range_mod.right = _width - 1;
       _range_mod.top = 0;
@@ -175,7 +175,7 @@ epd_mode が epd_qualityか否かの変化をした場合も同様にCMD_DISPLAY
 
       if (_initialize_seq) {
         _initialize_seq = false;
-        // リセット直後は起動シーケンス設定およびフレームバッファの転送を行う。ここではリフレッシュは行わない。
+        // Immediately after reset, perform startup sequence configuration and frame buffer transfer. No refresh is performed here.
         _bus->writeCommand(CMD_DISPLAY_UPDATE_CONTROL_2, 8);
         _bus->writeData(0xF8, 8);
         _exec_transfer(CMD_WRITE_RAM_BW, _range_mod, true);
@@ -183,14 +183,14 @@ epd_mode が epd_qualityか否かの変化をした場合も同様にCMD_DISPLAY
         _send_msec = millis();
       }
 
-      // epd_qualityの場合は反転描画は不要になる。
-      // 他のモードに変更した直後は反転描画を行う。
+      // For epd_quality, inverted drawing is not needed.
+      // Immediately after changing to another mode, perform inverted drawing.
       need_flip_draw = (epd_mode != epd_mode_t::epd_quality);
       _epd_frame_switching = need_flip_draw;
       if (!need_flip_draw)
       {
         if (_epd_frame_back)
-        {  // フレームバッファ2番に送信される場合はモード変更前に一度描画更新を行う
+        {  // If data would be sent to frame buffer 2, perform a drawing update before mode change
           _epd_frame_back = false;
           _exec_transfer(CMD_WRITE_RAM_BW, _range_mod);
           _bus->writeCommand(CMD_MASTER_ACTIVATION, 8); // Active Display update
@@ -216,7 +216,7 @@ epd_mode が epd_qualityか否かの変化をした場合も同様にCMD_DISPLAY
     _bus->writeCommand(CMD_MASTER_ACTIVATION, 8); // Active Display update
     _send_msec = millis();
     if (need_flip_draw)
-    { // 反転リフレッシュを自前でやる場合
+    { // When performing inverted refresh manually
       _exec_transfer(CMD_WRITE_RAM_BW, tr);
       _bus->writeCommand(CMD_MASTER_ACTIVATION, 8); // Active Display update
       _send_msec = millis();

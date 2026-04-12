@@ -26,7 +26,7 @@ namespace lgfx
  {
 //----------------------------------------------------------------------------
 
-    /// @brief メモリ領域が複数ブロックに分割されたフレームバッファ
+    /// @brief Frame buffer with memory region divided into multiple blocks
   class DividedFrameBuffer
   {
   public:
@@ -39,38 +39,38 @@ namespace lgfx
       full_psram
     };
 
-    /// @brief 初期化を実施し、メモリを割当てる
-    /// @param line_size 幅方向のバイト数
-    /// @param total_lines 高さ方向のライン数
-    /// @param block_lines メモリブロックひとつ当たりのライン数
-    /// @param use_psram ESP32でPSRAMを使用するか否か指定する
+    /// @brief Perform initialization and allocate memory
+    /// @param line_size Number of bytes in the width direction
+    /// @param total_lines Number of lines in the height direction
+    /// @param block_lines Number of lines per memory block
+    /// @param use_psram Specify whether to use PSRAM on ESP32
     uint8_t** create(size_t line_size, size_t total_lines, size_t block_lines, psram_setting_t use_psram = no_psram);
 
-    /// @brief 割当済みメモリを解放する
+    /// @brief Release allocated memory
     void release(void);
 
     inline size_t getLineSize(void) const { return _line_size; }
     inline size_t getTotalLines(void) const { return _total_lines; }
     inline size_t getBlockCount(void) const { return _block_count; }
 
-    /// @brief ブロック番号を指定してバッファのポインタを取得する
-    /// @param index ブロック番号
-    /// @return 指定したブロックのバッファ先頭ポインタ
+    /// @brief Get the buffer pointer by specifying the block number
+    /// @param index Block number
+    /// @return Pointer to the beginning of the buffer for the specified block
     inline uint8_t* getBlockBuffer(size_t index) const { return index < _block_count ? _block_array[index] : nullptr; }
 
-    /// @brief Y座標番号を指定してバッファのポインタを取得する
-    /// @param y ライン番号
-    /// @return 指定したラインの先頭ポインタ (ブロックの先頭とは限らない)
+    /// @brief Get the buffer pointer by specifying the Y coordinate
+    /// @param y Line number
+    /// @return Pointer to the beginning of the specified line (not necessarily the beginning of a block)
     inline uint8_t* getLineBuffer(size_t y) const { return &_block_array[y / _block_lines][_line_size * (y % _block_lines)]; }
 
     inline bool isInitialized(void) const { return _block_array != nullptr; }
 
   private:
     uint8_t** _block_array;
-    uint16_t _line_size;  // ラインひとつあたりのバイト数
-    uint16_t _total_lines; // 全体のライン数
-    uint16_t _block_lines; // メモリブロックひとつに含まれるライン数
-    uint16_t _block_count; // メモリブロックの数
+    uint16_t _line_size;  // Number of bytes per line
+    uint16_t _total_lines; // Total number of lines
+    uint16_t _block_lines; // Number of lines contained in one memory block
+    uint16_t _block_count; // Number of memory blocks
   };
 
 //----------------------------------------------------------------------------

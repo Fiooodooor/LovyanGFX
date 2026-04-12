@@ -14,16 +14,16 @@ void setup()
   lcd.init();
   if (lcd.width() < lcd.height()) { lcd.setRotation(lcd.getRotation() ^ 1); }
 
-// setBufferを使用することで、予め用意されたデータを用いてスプライトを使用できるようにする。
+// By using setBuffer, you can use a sprite with pre-prepared data.
   sprite.setBuffer(const_cast<std::uint8_t*>(image320x240x16), 320, 240, 16);
 //  sprite.setBuffer(const_cast<std::uint8_t*>(image480x320x8),  480, 320, 8);
 //  sprite.setBuffer(const_cast<std::uint8_t*>(image640x480x4),  640, 480, 4);
 //  sprite.setBuffer(const_cast<std::uint8_t*>(image1280x960x1), 1280, 960, 1);
 //  sprite.createPalette();
 
-// ※ 本来const(書換不可能)なデータをconst_castにより非constと偽って使用しています。
-// このため、このスプライトに対して描画を行うとプログラムはクラッシュします。
-// LCDや他のスプライトに描画する関数など、読出しを行う関数のみが使用できます。
+// * Originally const (read-only) data is being used as non-const by using const_cast.
+// Therefore, performing drawing operations on this sprite will crash the program.
+// Only read functions, such as those that draw to LCD or other sprites, can be used.
 // OK)  sprite.pushSprite 
 // OK)  sprite.pushRotated
 // OK)  sprite.pushRotateZoom

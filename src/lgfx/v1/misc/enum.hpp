@@ -222,10 +222,10 @@ namespace lgfx
 
   enum color_depth_t : uint16_t
   {
-    bit_mask     = 0x00FF   , /// ビット数取得用マスク値 (下位1Byteはビット数表現専用とする。変更しないこと);
-    has_palette  = 0x0800   , /// パレット値として扱う;
-    nonswapped   = 0x0100   , /// バイトスワップしていない値;
-    alternate    = 0x1000   , /// ビット数が同一な色表現が複数ある場合の相違表現用;
+    bit_mask     = 0x00FF   , /// Mask value for obtaining bit count (the lower 1 byte is dedicated to bit count representation. Do not modify);
+    has_palette  = 0x0800   , /// Treat as a palette value;
+    nonswapped   = 0x0100   , /// Value that is not byte-swapped;
+    alternate    = 0x1000   , /// For distinguishing alternative representations when multiple color representations have the same bit count;
 
     grayscale_1bit      =   1                         , //                            _______L
     grayscale_2bit      =   2                         , //                            ______LL
@@ -250,10 +250,10 @@ namespace lgfx
 
   enum error_t
   { unknown_err
-  , invalid_arg         // 引数が範囲外等でinvalidな場合のエラー;
-  , connection_lost     // 通信が切断されたり正しく行えない場合のエラー;
-  , mode_mismatch       // I2C通信が書込みモード時に読込みを指示するなど不一致な操作を行った場合のエラー;
-  , periph_device_err   // ペリフェラルが動作していない等のエラー;
+  , invalid_arg         // Error when argument is out of range or otherwise invalid;
+  , connection_lost     // Error when communication is disconnected or cannot be performed correctly;
+  , mode_mismatch       // Error when a mismatched operation is performed, such as requesting a read while I2C communication is in write mode;
+  , periph_device_err   // Error such as the peripheral not operating;
   };
 
 //----------------------------------------------------------------------------

@@ -154,8 +154,8 @@ namespace lgfx
           bus_cfg.freq_read  =  8000000;
           _bus_spi.config(bus_cfg);
 
-          { // 表示パネル制御の設定を行います。
-            auto cfg = p->config();    // 表示パネル設定用の構造体を取得します。
+          { // Configure display panel control settings.
+            auto cfg = p->config();    // Get the structure for display panel configuration.
 
             cfg.memory_width     =   132;
             cfg.memory_height    =   132;

@@ -29,7 +29,7 @@ namespace lgfx
 
   bool Panel_M5UnitLCD::init(bool use_reset)
   {
-    /// I2C接続のためGPIOによるRESET制御は不要なのでfalseで呼出す;
+    /// GPIO-based RESET control is unnecessary for I2C connection, so call with false;
     if (!Panel_Device::init(false)) return false;
 
     startWrite(true);
@@ -46,7 +46,7 @@ namespace lgfx
       if (use_reset)
       {
         _bus->writeCommand(CMD_RESET | 0x77 << 8 | 0x89 << 16 | CMD_RESET << 24, 32);
-        // リセットコマンド後は300msec待つ;
+        // Wait 300msec after reset command;
         lgfx::delay(300);
         int retry = 8;
         do
@@ -364,14 +364,14 @@ namespace lgfx
 
   static uint8_t* store_absolute(uint8_t* dst, const uint8_t* src, size_t src_size, size_t bytes)
   {
-    if (src_size >= 3)  // 絶対モード;
+    if (src_size >= 3)  // Absolute mode;
     {
       *dst++ = 0x00;
       *dst++ = src_size;
       memmove(dst, src, src_size * bytes);
       dst += src_size * bytes;
     }
-    else  // RLEモード;
+    else  // RLE mode;
     {
       for (size_t i = 0; i < src_size; i++)
       {

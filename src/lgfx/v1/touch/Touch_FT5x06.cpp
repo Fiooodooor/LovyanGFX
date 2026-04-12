@@ -105,7 +105,7 @@ if (_inited)
 
   size_t Touch_FT5x06::_read_data(uint8_t* readdata)
   {
-    /// 戻り値res: 通信に失敗した場合は0、通信に成功した場合はByte数
+    /// Return value res: 0 if communication failed, byte count if communication succeeded
     size_t res = 0;
     if (lgfx::i2c::beginTransaction(_cfg.i2c_port, _cfg.i2c_addr, _cfg.freq, false))
     {
@@ -159,7 +159,7 @@ if (_inited)
     size_t comparelen;
     int32_t retry = 5;
     do
-    { // 読出し中に値が変わる事があるので、連続読出しして前回と同値でなければリトライする;
+    { // Values may change during readout, so read consecutively and retry if the value differs from the previous read;
       readlen[retry & 1] = _read_data(readdata[retry & 1]);
       comparelen = std::min(readlen[0], readlen[1]);
     } while ((0 == comparelen || memcmp(readdata[0], readdata[1], readlen[0])) && --retry);

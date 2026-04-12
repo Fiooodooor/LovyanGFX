@@ -84,10 +84,10 @@ namespace lgfx
     uint32_t freq_write = _bus->getClock();
     if (freq_write > 5000000)
     {
-      /// 初期化処理は低めのクロックで実施する。;
-      /// RA8875は起動直後は動作クロックが低く、送信クロックが速すぎると処理されないため。;
-      /// 初期化時に動作クロックを上げるコマンドが実行されるので、;
-      /// 初期化後にユーザーが設定した本来のクロックに戻す。;
+      /// Initialization is performed at a lower clock speed.;
+      /// RA8875 has a low operating clock immediately after startup, and commands are not processed if the transmission clock is too fast.;
+      /// Since commands to increase the operating clock are executed during initialization,;
+      /// restore the original user-configured clock after initialization.;
       _bus->setClock(5000000);
     }
 
@@ -110,7 +110,7 @@ namespace lgfx
 
     endWrite();
 
-    /// 初期化後にクロックをユーザー設定値に戻す;
+    /// Restore clock to user-configured value after initialization;
     _bus->setClock(freq_write);
 
     _latestcolor = 0;
@@ -629,7 +629,7 @@ namespace lgfx
     {
       if ((1u << r) & 0b10010110) { y = _height - (y + 1); yadd = -1; }
       if (r & 2)                  { x = _width  - (x + 1); }
-      if (r & 1) { std::swap(x, y); std::swap(xadd, yadd); } // ここでは wとhは入れ替えない;
+      if (r & 1) { std::swap(x, y); std::swap(xadd, yadd); } // Do not swap w and h here;
     }
 
     x += _colstart;

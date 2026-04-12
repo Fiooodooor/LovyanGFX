@@ -108,8 +108,8 @@ namespace lgfx
 
     int retry = 128;
     do
-    { // FPGAのロットによって待ち時間に差がある。
-      // 先に進んで良いかステータスレジスタの状態をチェックする。
+    { // Wait time varies depending on the FPGA production lot.
+      // Check the status register to determine if it is OK to proceed.
       if ((JTAG_ReadStatus() & 0x200) == 0) { break; }
       delay(1);
     } while (--retry);
@@ -554,18 +554,18 @@ namespace lgfx
     {
    // ESP_LOGI(TAG, "FREQ:%lu , %lu  DIV_W:%lu , %lu", _bus->getClock(), _bus->getReadClock(), div_write, div_read);
       uint32_t fpga_id = _read_fpga_id();
-      // 受信したIDの先頭が "HD" なら正常動作
+      // Normal operation if received ID starts with "HD"
       if ((fpga_id & 0xFFFF) == ('H' | 'D' << 8))
       {
         break;
       }
 
       if (fpga_id == 0 || fpga_id == ~0u)
-      { // MISOが変化しない場合、コマンドが正しく受理されていないと仮定し送信速度を下げる。
+      { // If MISO does not change, assume command was not properly received and reduce transmission speed.
         _bus->setClock(apbfreq / ++div_write);
       }
       else
-      { // 受信データの先頭が HD でない場合は受信速度を下げる。
+      { // If received data does not start with HD, reduce reception speed.
         _bus->setReadClock(apbfreq / ++div_read);
       }
     } while (--retry);

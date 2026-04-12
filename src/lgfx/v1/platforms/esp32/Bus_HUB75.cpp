@@ -309,52 +309,52 @@ namespace lgfx
     }
 
 
-/*  // DMAディスクリプタが利用するDMAメモリ位置テーブル
- この配列は、14x3セットのDMAディスクリプタそれぞれが使用するバッファメモリの範囲を表す。
-  0 : 無データ,x1点灯
-  1 : 輝度1/32データ,無灯
-  2 : 輝度1/16データ,1/32点灯
-  3 : 輝度1/ 8データ,1/16点灯
-  4 : 輝度1/ 4データ,1/8点灯
-  5 : 輝度1/ 2データ,1/4点灯
-  6 : 輝度 x 1データ,1/2点灯
-  7 : 輝度 x 2データ, x1点灯
-  8 : 輝度 x 4データ, x1点灯
-  9 : SHIFTREG_ABC座標,無灯 (他の期間と比べてデータサイズが小さい。パネルの高さ相当)
+/*  // DMA memory location table used by DMA descriptors
+ This array represents the buffer memory range used by each of the 14x3 sets of DMA descriptors.
+  0 : no data, x1 lighting
+  1 : brightness 1/32 data, no lighting
+  2 : brightness 1/16 data, 1/32 lighting
+  3 : brightness 1/8 data, 1/16 lighting
+  4 : brightness 1/4 data, 1/8 lighting
+  5 : brightness 1/2 data, 1/4 lighting
+  6 : brightness x1 data, 1/2 lighting
+  7 : brightness x2 data, x1 lighting
+  8 : brightness x4 data, x1 lighting
+  9 : SHIFTREG_ABC coordinates, no lighting (data size is smaller compared to other periods; equivalent to panel height)
 */
     static constexpr const uint8_t dma_buf_idx_tbl_565[] = {
       9, 1, 2, 3, 4, 5, 6, 7, 0, 8, 0, 0, 0, 0,
     };
 
-// RGB332の場合は階調表現を減らして総データ量を削減している。
-// データ転送が5回、無データ点灯は2回になる。SHIFTREG_ABC座標は[6]
+// For RGB332, the number of gradation levels is reduced to decrease total data volume.
+// Data transfer occurs 5 times, no-data lighting occurs 2 times. SHIFTREG_ABC coordinates are at [6]
     static constexpr const uint8_t dma_buf_idx_tbl_332[] = {
       6, 1, 2, 3, 4, 5, 0, 0,
     };
 
-/* RGB565の場合のDMAディスクリプタの各役割は以下の通り
-  [ 0](SHIFTREG_ABC座標転送,無灯期間)
-  [ 1](輝度1/32成分データ転送,無灯期間)
-  [ 2](輝度1/16成分データ転送,1/32点灯期間)
-  [ 3](輝度1/ 8成分データ転送,1/16点灯期間)
-  [ 4](輝度1/ 4成分データ転送,1/ 8点灯期間)
-  [ 5](輝度1/ 2成分データ転送,1/ 4点灯期間)
-  [ 6](輝度1/ 1成分データ転送,1/ 2点灯期間)
-  [ 7](輝度  x2成分データ転送,  x1点灯期間)
-  [ 8](            データ無し,  x1点灯期間)
-  [ 9](輝度  x4成分データ転送,  x1点灯期間)
-  [10](            データ無し,  x1点灯期間)
-  [11](            データ無し,  x1点灯期間)
-  [12](            データ無し,  x1点灯期間)
-  [13](            データ無し,  x1点灯期間)
-  ※ 13番の転送が終わったあとは次のラインの先頭ディスクリプタにリンクする。
-     また、13番の転送が終わった時点でEOF割込みが起こり、次のラインのデータ生成タスクが実行される。
+/* The roles of each DMA descriptor for RGB565 are as follows:
+  [ 0](SHIFTREG_ABC coordinate transfer, no-lighting period)
+  [ 1](brightness 1/32 component data transfer, no-lighting period)
+  [ 2](brightness 1/16 component data transfer, 1/32 lighting period)
+  [ 3](brightness 1/8 component data transfer, 1/16 lighting period)
+  [ 4](brightness 1/4 component data transfer, 1/8 lighting period)
+  [ 5](brightness 1/2 component data transfer, 1/4 lighting period)
+  [ 6](brightness 1/1 component data transfer, 1/2 lighting period)
+  [ 7](brightness x2 component data transfer, x1 lighting period)
+  [ 8](                         no data, x1 lighting period)
+  [ 9](brightness x4 component data transfer, x1 lighting period)
+  [10](                         no data, x1 lighting period)
+  [11](                         no data, x1 lighting period)
+  [12](                         no data, x1 lighting period)
+  [13](                         no data, x1 lighting period)
+  * After descriptor 13 finishes transfer, it links to the first descriptor of the next line.
+    Also, when descriptor 13 finishes, an EOF interrupt occurs and the data generation task for the next line is executed.
 
-  ※ 0番 SHIFTREG_ABC座標,無灯の転送期間はパネル１枚の高さに比例、それ以外の期間はパネル全体の幅に比例する
+  * The transfer period for descriptor 0 (SHIFTREG_ABC coordinates, no lighting) is proportional to the height of one panel; all other periods are proportional to the total panel width.
 
-   色深度8を再現するために、同一ラインに輝度成分の異なるデータを8回を送る。
-   後半の輝度x2,x4のデータに対しては点灯期間が長いため、x1点灯期間を複数設けることで輝度差を実現する。
-   "データ無しx1点灯期間"で送信する内容はすべて同一で良いため、同じメモリ範囲を共有利用してメモリを節約している。
+   To reproduce 8-bit color depth, data with different brightness components is sent 8 times for the same line.
+   For the latter brightness x2 and x4 data, since the lighting period is longer, multiple x1 lighting periods are provided to achieve the brightness difference.
+   Since the content sent during "no-data x1 lighting periods" can all be identical, the same memory range is shared to save memory.
 */
 
     uint32_t transfer_period_count = TRANSFER_PERIOD_COUNT_332;
@@ -379,8 +379,8 @@ namespace lgfx
 
     uint32_t panel_width = _panel_width;
 
-    // DMA用バッファメモリ確保。 (無データ点灯期間1回分 + データ転送期間8回分) * パネル幅 + (SHIFTREG_ABC座標期間1回) * (パネル高さ * 2) の合計を連続領域として確保する
-    // 無データ点灯期間は合計5回あるが、同じ領域を使い回すためバッファは1回分でよい;
+    // Allocate DMA buffer memory. Reserve a contiguous region totaling (1 no-data lighting period + 8 data transfer periods) * panel width + (1 SHIFTREG_ABC coordinate period) * (panel height * 2)
+    // Although there are 5 no-data lighting periods in total, only 1 buffer is needed since the same region is reused;
     size_t buf_bytes = (((transfer_period_count + 1) * panel_width) + (2 * _panel_height)) * sizeof(uint16_t);
     _dma_transfer_len = (((transfer_period_count + extend_period_count) * panel_width) + (2 * _panel_height));
 
@@ -391,16 +391,16 @@ namespace lgfx
         endTransaction();
         return;
       }
-      // バッファ初期値として OE(消灯)で埋めておく
+      // Fill buffer with OE (lights off) as the initial value
       memset(_dma_buf[i], _mask_oe, buf_bytes);
 
       for (int j = 0; j < total_period_count; j++) {
         uint32_t idx = i * total_period_count + j;
         size_t bufidx = dma_buf_idx_tbl[j] * panel_width;
-        // SHIFTREG_ABCの期間のみデータ長をpanel_height * 2とする
+        // Set data length to panel_height * 2 only for the SHIFTREG_ABC period
         size_t buflen = ((j == 0) ? _panel_height << 1 : panel_width) * sizeof(uint16_t);
         _dmadesc[idx].buf = (volatile uint8_t*)&(_dma_buf[i][bufidx]);
-        _dmadesc[idx].eof = j == (total_period_count - 1); // 最後の転送期間のみEOFイベントを発生させる
+        _dmadesc[idx].eof = j == (total_period_count - 1); // Generate EOF event only for the last transfer period
         _dmadesc[idx].empty = (uint32_t)(&_dmadesc[(idx + 1) % (total_period_count * _dma_desc_set)]);
         _dmadesc[idx].owner = 1;
         _dmadesc[idx].length = buflen;
@@ -409,12 +409,12 @@ namespace lgfx
     }
     setBrightness(_brightness);
 
-    { // ガンマ補正テーブル生成
-    // ガンマ補正と同時に、各ビットの間隔を広げる処理も行うようにデータを生成する。
+    { // Gamma correction table generation
+    // Generate data that performs both gamma correction and bit spacing expansion simultaneously.
       if (_depth == color_depth_t::rgb565_2Byte)
       {
-        // RGB565の場合は、単一色に対して使用する64要素のテーブルを作成する。
-        // 利用時にRGB成分をまとめやすくするため、3bit間隔に変換して作成する。
+        // For RGB565, create a 64-element table used for a single color component.
+        // Convert to 3-bit spacing to make it easier to combine RGB components during use.
         _pixel_tbl = (uint32_t*)heap_alloc_dma(64 * sizeof(uint32_t));
         if (_pixel_tbl == nullptr)
         {
@@ -429,7 +429,7 @@ namespace lgfx
           if (v < i) { v = i; }
           else if (v > 255) { v = 255; }
 
-          // データの各ビット間の間隔を広げる
+          // Widen the spacing between each bit of the data
           uint32_t value = 0;
           for (size_t shift = 0; shift < 8; ++shift)
           {
@@ -441,8 +441,8 @@ namespace lgfx
       }
       else
       {
-        // RGB332の場合は、3色まとめて変換できる256要素のテーブルを作成する。
-        // BGRの3ビット+無データ3bitの 6bitが5セット並んだ状態のデータを作成する。
+        // For RGB332, create a 256-element table that can convert all 3 colors at once.
+        // Create data in a format where 5 sets of 6-bit groups (3-bit BGR + 3-bit padding) are arranged.
         _pixel_tbl = (uint32_t*)heap_alloc_dma(256 * sizeof(uint32_t));
         if (_pixel_tbl == nullptr)
         {
@@ -476,7 +476,7 @@ namespace lgfx
     }
 
     if (_cfg.led_driver)
-    { // LEDドライバ別のレジスタ設定
+    { // Register settings for each LED driver type
       switch_gpio_control(false);
 
       switch (_cfg.led_driver)
@@ -559,7 +559,7 @@ namespace lgfx
 
   void Bus_HUB75::setRefreshRate(uint16_t refresh_rate)
   {
-    // 総転送データ量とリフレッシュレートに基づいて送信クロックを設定する
+    // Set the transmission clock based on total transfer data volume and refresh rate
     _cfg.freq_write = (_dma_transfer_len >> 1) * _panel_height * refresh_rate;
     auto i2s_dev = (i2s_dev_t*)_dev;
     if (i2s_dev)
@@ -636,132 +636,132 @@ namespace lgfx
     uint32_t xe;              // 32
     uint32_t mask3bit;        // 36
     uint32_t mix_value;       // 40
-    uint32_t* _retaddr;       // 44 A0保管用
+    uint32_t* _retaddr;       // 44 A0 register save area
   };
 
   static void hub75Draw332_asm(asm_work_t* work)
   {
-/* 関数が呼び出された直後のレジスタの値
-    a0 : リターンアドレス (workに退避し、a0を別の用途に使用)
-    a1 : スタックポインタ (変更不可)
-    a2 : asm_work_t*      (変更せずそのまま利用する)
+/* Register values immediately after the function is called:
+    a0 : return address (saved to work, a0 is used for other purposes)
+    a1 : stack pointer (must not be modified)
+    a2 : asm_work_t*  (used as-is without modification)
 */
     __asm__ __volatile__ (
-      "s32i.n  a0,  a2,  44               \n"  // A0 を退避
+      "s32i.n  a0,  a2,  44               \n"  // Save A0
       "l32i.n  a3,  a2,  32               \n"  // a3  = xe
-      "l32i.n  a0,  a2,  0                \n"  // ★a0  = 出力先アドレス
-      "l32i.n  a15, a2,  16               \n"  // ★a15 = mixdata アドレス
-      "l32i.n  a14, a2,  24               \n"  // ★a14 = len32
-      "l32i.n  a13, a2,  12               \n"  // ★a13 = pixel_tbl
-      "l32i.n  a12, a2,  8                \n"  // ★a12 = パネル下側の元データ配列
-      "l32i.n  a11, a2,  4                \n"  // ★a11 = パネル上側の元データ配列
-      "slli    a14, a14, 2                \n"  // len32 を 4倍(d32の加算に使うため)
+      "l32i.n  a0,  a2,  0                \n"  // *a0  = output destination address
+      "l32i.n  a15, a2,  16               \n"  // *a15 = mixdata address
+      "l32i.n  a14, a2,  24               \n"  // *a14 = len32
+      "l32i.n  a13, a2,  12               \n"  // *a13 = pixel_tbl
+      "l32i.n  a12, a2,  8                \n"  // *a12 = lower panel source data array
+      "l32i.n  a11, a2,  4                \n"  // *a11 = upper panel source data array
+      "slli    a14, a14, 2                \n"  // multiply len32 by 4 (for d32 addition)
 
 "HUB75_DRAW332_LOOP_START:          \n"
 
-      "loop    a3, HUB75_DRAW332_LOOP_END \n"  // ループ開始 (a3 にループ回数 xe がセットされた状態でここに来ること)
+      "loop    a3, HUB75_DRAW332_LOOP_END \n"  // loop start (a3 must contain loop count xe when reaching here)
 
-      "l32i.n  a10, a15, 16               \n"  // ★a10 に mixdata末尾の値を代入 (4*sizeof(uint32_t) = 16)
+      "l32i.n  a10, a15, 16               \n"  // *a10 = assign last value of mixdata (4*sizeof(uint32_t) = 16)
 
-      "l8ui    a3,  a11, 0                \n"  // a3 = 元データ上側配列から rgb332形式 1ピクセル目取得
-      "l8ui    a4,  a12, 0                \n"  // a4 = 元データ下側配列から rgb332形式 1ピクセル目取得
-      "l8ui    a5,  a11, 1                \n"  // a5 = 元データ上側配列から rgb332形式 2ピクセル目取得
-      "l8ui    a6,  a12, 1                \n"  // a6 = 元データ下側配列から rgb332形式 2ピクセル目取得
-      "addi.n  a11, a11, 2                \n"  // 元データのアドレスを2ピクセル進める
-      "addi.n  a12, a12, 2                \n"  // 元データのアドレスを2ピクセル進める
+      "l8ui    a3,  a11, 0                \n"  // a3 = get rgb332 format pixel 1 from upper source data array
+      "l8ui    a4,  a12, 0                \n"  // a4 = get rgb332 format pixel 1 from lower source data array
+      "l8ui    a5,  a11, 1                \n"  // a5 = get rgb332 format pixel 2 from upper source data array
+      "l8ui    a6,  a12, 1                \n"  // a6 = get rgb332 format pixel 2 from lower source data array
+      "addi.n  a11, a11, 2                \n"  // advance source data address by 2 pixels
+      "addi.n  a12, a12, 2                \n"  // advance source data address by 2 pixels
 
-      "addx4   a3,  a3,  a13              \n"  // a3  = テーブルアドレスに変換
-      "addx4   a4,  a4,  a13              \n"  // a4  = テーブルアドレスに変換
-      "addx4   a5,  a5,  a13              \n"  // a5  = テーブルアドレスに変換
-      "addx4   a6,  a6,  a13              \n"  // a6  = テーブルアドレスに変換
-      "l32i.n  a3,  a3,  0                \n"  // a3  = pixel_tbl[RGB332] 1ピクセル目 上側の RGB成分 完成
-      "l32i.n  a4,  a4,  0                \n"  // a4  = pixel_tbl[RGB332] 1ピクセル目 下側の RGB成分 完成
-      "l32i.n  a5,  a5,  0                \n"  // a5  = pixel_tbl[RGB332] 2ピクセル目 上側の RGB成分 完成
-      "l32i.n  a6,  a6,  0                \n"  // a6  = pixel_tbl[RGB332] 2ピクセル目 下側の RGB成分 完成
+      "addx4   a3,  a3,  a13              \n"  // a3  = convert to table address
+      "addx4   a4,  a4,  a13              \n"  // a4  = convert to table address
+      "addx4   a5,  a5,  a13              \n"  // a5  = convert to table address
+      "addx4   a6,  a6,  a13              \n"  // a6  = convert to table address
+      "l32i.n  a3,  a3,  0                \n"  // a3  = pixel_tbl[RGB332] pixel 1 upper RGB component complete
+      "l32i.n  a4,  a4,  0                \n"  // a4  = pixel_tbl[RGB332] pixel 1 lower RGB component complete
+      "l32i.n  a5,  a5,  0                \n"  // a5  = pixel_tbl[RGB332] pixel 2 upper RGB component complete
+      "l32i.n  a6,  a6,  0                \n"  // a6  = pixel_tbl[RGB332] pixel 2 lower RGB component complete
 
 //////////////////
 
-      "s32i.n  a10, a0,  0                \n"  // mixdata 末尾のデータを出力先にセット
-      "mov.n   a9,  a0                    \n"  // a9 に 出力先 アドレスをコピー
-      "addi.n  a0,  a0,  4                \n"  // ★a0 出力先アドレス を1進める
+      "s32i.n  a10, a0,  0                \n"  // set last mixdata value to output destination
+      "mov.n   a9,  a0                    \n"  // copy output destination address to a9
+      "addi.n  a0,  a0,  4                \n"  // *a0 advance output destination address by 1
 
-// この時点で a3,a4,a5,a6 に 合計4ピクセル分のデータが入った状態になっている
-// テーブルから取得したデータは 0bBGR___BGR___BGR___BGR___BGR となっている。
-// (6bit単位で 3bit無データ + BGR)
-// ここから、パネル上側と下側のRGB成分が隣接し6bit単位となった状態に変換する
-      "addx8   a3,  a4,  a3               \n"  // a3 = (下側1ピクセル目 << 3) + 上側1ピクセル目
-      "addx8   a4,  a6,  a5               \n"  // a4 = (下側2ピクセル目 << 3) + 上側2ピクセル目
+// At this point, a3, a4, a5, a6 contain data for a total of 4 pixels
+// The data obtained from the table is in the format 0bBGR___BGR___BGR___BGR___BGR
+// (6-bit units: 3-bit padding + BGR)
+// From here, convert so that upper and lower panel RGB components are adjacent in 6-bit units
+      "addx8   a3,  a4,  a3               \n"  // a3 = (lower pixel 1 << 3) + upper pixel 1
+      "addx8   a4,  a6,  a5               \n"  // a4 = (lower pixel 2 << 3) + upper pixel 2
 
-// ここから出力
-// RGB成分 と mixdata(Y座標情報+OE信号) を合わせた16bitデータを2ピクセル分32bit纏めて出力 を 5回(transfer_period_count) 行う
+// Output starts here
+// Combine RGB components with mixdata (Y coordinate info + OE signal) into 16-bit data, output 2 pixels as 32-bit, 5 times (transfer_period_count)
 
       "l32i.n   a8,  a15, 0               \n"  // a8  = mixdata[0]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  0,   6          \n"  // 1ピクセル目 6ビット取得
-      "slli     a7,  a7,  16              \n"  // 1ピクセル目のデータを左16bitシフト
-      "add.n    a8,  a7,  a8              \n"  // a8 = 1ピクセル目+mixdata
-      "extui    a7,  a4,  0,   6          \n"  // 2ピクセル目 6ビット取得
-      "add.n    a7,  a7,  a8              \n"  // a7 = 2ピクセル目+a8
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  0,   6          \n"  // pixel 1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift pixel 1 data left by 16 bits
+      "add.n    a8,  a7,  a8              \n"  // a8 = pixel 1 + mixdata
+      "extui    a7,  a4,  0,   6          \n"  // pixel 2: get 6 bits
+      "add.n    a7,  a7,  a8              \n"  // a7 = pixel 2 + a8
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 4               \n"  // a8 = mixdata[1]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  6,   6          \n"  // 1ピクセル目 6ビット取得
-      "slli     a7,  a7,  16              \n"  // 1ピクセル目のデータを左16bitシフト
-      "add.n    a8,  a7,  a8              \n"  // a8 = 1ピクセル目+mixdata
-      "extui    a7,  a4,  6,   6          \n"  // 2ピクセル目 6ビット取得
-      "add.n    a7,  a7,  a8              \n"  // a7 = 2ピクセル目+a8
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  6,   6          \n"  // pixel 1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift pixel 1 data left by 16 bits
+      "add.n    a8,  a7,  a8              \n"  // a8 = pixel 1 + mixdata
+      "extui    a7,  a4,  6,   6          \n"  // pixel 2: get 6 bits
+      "add.n    a7,  a7,  a8              \n"  // a7 = pixel 2 + a8
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 8               \n"  // a8  = mixdata[2]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  12,  6          \n"  // 1ピクセル目 6ビット取得
-      "slli     a7,  a7,  16              \n"  // 1ピクセル目のデータを左16bitシフト
-      "add.n    a8,  a7,  a8              \n"  // a8 = 1ピクセル目+mixdata
-      "extui    a7,  a4,  12,  6          \n"  // 2ピクセル目 6ビット取得
-      "add.n    a7,  a7,  a8              \n"  // a7 = 2ピクセル目+a8
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  12,  6          \n"  // pixel 1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift pixel 1 data left by 16 bits
+      "add.n    a8,  a7,  a8              \n"  // a8 = pixel 1 + mixdata
+      "extui    a7,  a4,  12,  6          \n"  // pixel 2: get 6 bits
+      "add.n    a7,  a7,  a8              \n"  // a7 = pixel 2 + a8
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 12              \n"  // a8 = mixdata[3]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  18,  6          \n"  // 1ピクセル目 6ビット取得
-      "slli     a7,  a7,  16              \n"  // 1ピクセル目のデータを左16bitシフト
-      "add.n    a8,  a7,  a8              \n"  // a8 = 1ピクセル目+mixdata
-      "extui    a7,  a4,  18,  6          \n"  // 2ピクセル目 6ビット取得
-      "add.n    a7,  a7,  a8              \n"  // a7 = 2ピクセル目+a8
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  18,  6          \n"  // pixel 1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift pixel 1 data left by 16 bits
+      "add.n    a8,  a7,  a8              \n"  // a8 = pixel 1 + mixdata
+      "extui    a7,  a4,  18,  6          \n"  // pixel 2: get 6 bits
+      "add.n    a7,  a7,  a8              \n"  // a7 = pixel 2 + a8
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
-      // 最後の1回は mixdata の取得を省略(a10に取得しておいた値を再利用する)
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  24,  6          \n"  // 1ピクセル目 6ビット取得
-      "slli     a7,  a7,  16              \n"  // 1ピクセル目のデータを左16bitシフト
-      "add.n    a8,  a7,  a10             \n"  // a8 = 1ピクセル目+mixdata
-      "extui    a7,  a4,  24,  6          \n"  // 2ピクセル目 6ビット取得
-      "add.n    a7,  a7,  a8              \n"  // a7 = 2ピクセル目+a8
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      // Skip mixdata fetch for the last iteration (reuse value previously fetched into a10)
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  24,  6          \n"  // pixel 1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift pixel 1 data left by 16 bits
+      "add.n    a8,  a7,  a10             \n"  // a8 = pixel 1 + mixdata
+      "extui    a7,  a4,  24,  6          \n"  // pixel 2: get 6 bits
+      "add.n    a7,  a7,  a8              \n"  // a7 = pixel 2 + a8
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
 "HUB75_DRAW332_LOOP_END:            \n"
 
-      "l32i.n  a4,  a2,  28               \n" // a4に xe_idx を代入
-      "l32i.n  a5,  a2,  20               \n" // a5に xe_tbl を代入
-      "l32i.n  a9,  a2,  40               \n" // a9に mixdata テーブル更新用の値を取得
-      "beqi    a4,  5,   HUB75_EXIT332    \n" // xe_idx が終端に達していたら処理を終える
-      "addx2   a6,  a4,  a5               \n" // a6 に xeテーブル現在インデクスのアドレス
-      "l16ui   a3,  a6,  0                \n" // a3 に現在の xe値
+      "l32i.n  a4,  a2,  28               \n" // a4 = assign xe_idx
+      "l32i.n  a5,  a2,  20               \n" // a5 = assign xe_tbl
+      "l32i.n  a9,  a2,  40               \n" // a9 = get mixdata table update value
+      "beqi    a4,  5,   HUB75_EXIT332    \n" // if xe_idx has reached the end, exit processing
+      "addx2   a6,  a4,  a5               \n" // a6 = address of current xe table index
+      "l16ui   a3,  a6,  0                \n" // a3 = current xe value
       "srli    a3 , a3,  1                \n" // a3 >>= 1
-// ここから mixdata の値を更新、 xe の位置を再設定
+// From here, update mixdata values and reset xe position
 "HUB75_BR332LOOP_START:             \n"
-        "mov     a5,  a3                    \n" // a5 に前の xe値 を移す
-        "l16ui   a3,  a6,  2                \n" // a3 に新しい xe値 を代入
-        "addi.n  a6,  a6,  2                \n" // a6 xeテーブル位置をひとつ進める
+        "mov     a5,  a3                    \n" // move previous xe value to a5
+        "l16ui   a3,  a6,  2                \n" // a3 = assign new xe value
+        "addi.n  a6,  a6,  2                \n" // a6 advance xe table position by one
         "addi.n  a4,  a4,  1                \n" // a4 ++xe_idx
-        "addx4   a8,  a4,  a15              \n" // A8 に更新対象の mixdata のアドレスをセット
-        "s32i.n  a9,  a8,  0                \n" // mixdata 更新
-        "srli    a3,  a3,  1                \n" // A3 >>= 1
-      "bge     a5,  a3,  HUB75_BR332LOOP_START     \n" // xe 値が同値なら BR_LOOP 再トライ
-      "s32i.n  a4,  a2,  28               \n" // xe_idx の値を保存
-      "sub     a3,  a3,  a5               \n" // 新しい xe値から前回のxe値を引き、差分を得る
-      "j HUB75_DRAW332_LOOP_START         \n" // a3 (xe) が刷新されたので再度先頭からループ
+        "addx4   a8,  a4,  a15              \n" // a8 = set address of target mixdata to update
+        "s32i.n  a9,  a8,  0                \n" // update mixdata
+        "srli    a3,  a3,  1                \n" // a3 >>= 1
+      "bge     a5,  a3,  HUB75_BR332LOOP_START     \n" // if xe values are equal, retry BR_LOOP
+      "s32i.n  a4,  a2,  28               \n" // save xe_idx value
+      "sub     a3,  a3,  a5               \n" // subtract previous xe value from new xe value to get the difference
+      "j HUB75_DRAW332_LOOP_START         \n" // a3 (xe) has been updated, loop from the beginning again
 
 "HUB75_EXIT332:                   \n"
 
@@ -771,223 +771,223 @@ namespace lgfx
 
   static void hub75Draw565_asm(asm_work_t* work)
   {
-/* 関数が呼び出された直後のレジスタの値
-    a0 : リターンアドレス (workに退避し、a0を別の用途に使用)
-    a1 : スタックポインタ (変更不可)
-    a2 : asm_work_t*      (変更せずそのまま利用する)
+/* Register values immediately after the function is called:
+    a0 : return address (saved to work, a0 is used for other purposes)
+    a1 : stack pointer (must not be modified)
+    a2 : asm_work_t*  (used as-is without modification)
 */
     __asm__ __volatile__ (
-      "s32i.n  a0,  a2,  44               \n"  // a0 を退避
+      "s32i.n  a0,  a2,  44               \n"  // Save a0
       "l32i.n  a3,  a2,  32               \n"  // a3  = xe
-      "l32i.n  a0,  a2,  0                \n"  // ★a0  = 出力先アドレス
-      "l32i.n  a11, a2,  4                \n"  // ★a11 = パネル上側の元データ配列
-      "l32i.n  a12, a2,  8                \n"  // ★a12 = パネル下側の元データ配列
-      "l32i.n  a13, a2,  12               \n"  // ★a13 = pixel_tbl
-      "l32i.n  a14, a2,  24               \n"  // ★a14 = len32
-      "movi    a15, 0b111000111000111000111000111   \n"  // A15 にマスクパターンをセット
-      "slli    a14, a14, 2                \n"  // len32 を 4倍(d32の加算に使うため)
-      "s32i.n  a15, a2,  36               \n"  // マスクパターンをworkに退避
+      "l32i.n  a0,  a2,  0                \n"  // *a0  = output destination address
+      "l32i.n  a11, a2,  4                \n"  // *a11 = upper panel source data array
+      "l32i.n  a12, a2,  8                \n"  // *a12 = lower panel source data array
+      "l32i.n  a13, a2,  12               \n"  // *a13 = pixel_tbl
+      "l32i.n  a14, a2,  24               \n"  // *a14 = len32
+      "movi    a15, 0b111000111000111000111000111   \n"  // set mask pattern in A15
+      "slli    a14, a14, 2                \n"  // multiply len32 by 4 (for d32 addition)
+      "s32i.n  a15, a2,  36               \n"  // save mask pattern to work
 
 "HUB75_DRAW565_LOOP_START:          \n"
 
-      "loop    a3, HUB75_DRAW565_LOOP_END \n"  // ループ開始 (a3 にループ回数 xe がセットされた状態でここに来ること)
+      "loop    a3, HUB75_DRAW565_LOOP_END \n"  // loop start (a3 must contain loop count xe when reaching here)
 
-      "l32i.n  a9,  a11, 0                \n"  // a9  = 元データ配列から rgb565形式 2ピクセル まとめて取得
-      "l32i.n  a10, a12, 0                \n"  // a10 = 元データ配列から rgb565形式 2ピクセル まとめて取得
-      "addi.n  a11, a11, 4                \n"  // 元データのアドレスを2ピクセル進める
-      "addi.n  a12, a12, 4                \n"  // 元データのアドレスを2ピクセル進める
+      "l32i.n  a9,  a11, 0                \n"  // a9  = fetch 2 pixels in rgb565 format from source data array
+      "l32i.n  a10, a12, 0                \n"  // a10 = fetch 2 pixels in rgb565 format from source data array
+      "addi.n  a11, a11, 4                \n"  // advance source data address by 2 pixels
+      "addi.n  a12, a12, 4                \n"  // advance source data address by 2 pixels
 
 //////////////////
 
-      "extui   a5,  a9,  0,   5           \n"  // a5  = 青成分取得
-      "extui   a6,  a9,  5,   6           \n"  // a6  = 緑成分取得
-      "extui   a7,  a9,  11,  5           \n"  // a7  = 赤成分取得
-      "addx8   a4,  a5,  a13              \n"  // a4  = テーブルアドレスに変換 (5bitデータを元にuint32_t[64]のテーブルを引くため x8する)
-      "addx4   a5,  a6,  a13              \n"  // a5  = テーブルアドレスに変換 (6bitデータを元にuint32_t[64]のテーブルを引くため x4する)
-      "addx8   a6,  a7,  a13              \n"  // a6  = テーブルアドレスに変換 (5bitデータを元にuint32_t[64]のテーブルを引くため x8する)
-      "l32i.n  a3,  a4,  4                \n"  // a3  = pixel_tbl[青成分]
-      "l32i.n  a4,  a5,  0                \n"  // a4  = pixel_tbl[緑成分]
-      "l32i.n  a5,  a6,  4                \n"  // a5  = pixel_tbl[赤成分]
+      "extui   a5,  a9,  0,   5           \n"  // a5  = get blue component
+      "extui   a6,  a9,  5,   6           \n"  // a6  = get green component
+      "extui   a7,  a9,  11,  5           \n"  // a7  = get red component
+      "addx8   a4,  a5,  a13              \n"  // a4  = convert to table address (x8 to index uint32_t[64] table from 5-bit data)
+      "addx4   a5,  a6,  a13              \n"  // a5  = convert to table address (x4 to index uint32_t[64] table from 6-bit data)
+      "addx8   a6,  a7,  a13              \n"  // a6  = convert to table address (x8 to index uint32_t[64] table from 5-bit data)
+      "l32i.n  a3,  a4,  4                \n"  // a3  = pixel_tbl[blue component]
+      "l32i.n  a4,  a5,  0                \n"  // a4  = pixel_tbl[green component]
+      "l32i.n  a5,  a6,  4                \n"  // a5  = pixel_tbl[red component]
 
-      // ロード待ちのため、先の処理を間に挟む
-      "extui   a6,  a10, 0,   5           \n"  // a6  = 青成分取得
-      "extui   a7,  a10, 5,   6           \n"  // a7  = 緑成分取得
-      "extui   a8,  a10, 11,  5           \n"  // a8  = 赤成分取得
+      // Interleave subsequent processing while waiting for load
+      "extui   a6,  a10, 0,   5           \n"  // a6  = get blue component
+      "extui   a7,  a10, 5,   6           \n"  // a7  = get green component
+      "extui   a8,  a10, 11,  5           \n"  // a8  = get red component
 
-      "addx2   a3,  a3,  a4               \n"  // a3  = (青 << 1) + 緑
-      "addx2   a3,  a3,  a5               \n"  // a3  = (青緑 << 1) + 赤 1ピクセル目 上側の RGB成分 完成
+      "addx2   a3,  a3,  a4               \n"  // a3  = (blue << 1) + green
+      "addx2   a3,  a3,  a5               \n"  // a3  = (blue+green << 1) + red: pixel 1 upper RGB component complete
 //////////////////
 
-      "addx8   a5,  a6,  a13              \n"  // a5  = テーブルアドレスに変換
-      "addx4   a6,  a7,  a13              \n"  // a6  = テーブルアドレスに変換
-      "addx8   a7,  a8,  a13              \n"  // a7  = テーブルアドレスに変換
-      "l32i.n  a4,  a5,  4                \n"  // a4  = pixel_tbl[青成分]
-      "l32i.n  a5,  a6,  0                \n"  // a5  = pixel_tbl[緑成分]
-      "l32i.n  a6,  a7,  4                \n"  // a6  = pixel_tbl[赤成分]
+      "addx8   a5,  a6,  a13              \n"  // a5  = convert to table address
+      "addx4   a6,  a7,  a13              \n"  // a6  = convert to table address
+      "addx8   a7,  a8,  a13              \n"  // a7  = convert to table address
+      "l32i.n  a4,  a5,  4                \n"  // a4  = pixel_tbl[blue component]
+      "l32i.n  a5,  a6,  0                \n"  // a5  = pixel_tbl[green component]
+      "l32i.n  a6,  a7,  4                \n"  // a6  = pixel_tbl[red component]
 
-      // ロード待ちのため、先の処理を間に挟む
-      "extui   a7,  a9,  16,  5           \n"  // a7  = 青成分取得
-      "extui   a8,  a9,  21,  6           \n"  // a8  = 緑成分取得
-      "extui   a9,  a9,  27,  5           \n"  // a9  = 赤成分取得
+      // Interleave subsequent processing while waiting for load
+      "extui   a7,  a9,  16,  5           \n"  // a7  = get blue component
+      "extui   a8,  a9,  21,  6           \n"  // a8  = get green component
+      "extui   a9,  a9,  27,  5           \n"  // a9  = get red component
 
-      "addx2   a4,  a4,  a5               \n"  // a4  = (青 << 1) + 緑
-      "addx2   a4,  a4,  a6               \n"  // a4  = (青緑 << 1) + 赤 1ピクセル目 下側の RGB成分 完成
+      "addx2   a4,  a4,  a5               \n"  // a4  = (blue << 1) + green
+      "addx2   a4,  a4,  a6               \n"  // a4  = (blue+green << 1) + red: pixel 1 lower RGB component complete
 //////////////////
 
-      "addx8   a6,  a7,  a13              \n"  // a6  = テーブルアドレスに変換
-      "addx4   a7,  a8,  a13              \n"  // a7  = テーブルアドレスに変換
-      "addx8   a8,  a9,  a13              \n"  // a8  = テーブルアドレスに変換
-      "l32i.n  a5,  a6,  4                \n"  // a5  = pixel_tbl[青成分]
-      "l32i.n  a6,  a7,  0                \n"  // a6  = pixel_tbl[緑成分]
-      "l32i.n  a7,  a8,  4                \n"  // a7  = pixel_tbl[赤成分]
+      "addx8   a6,  a7,  a13              \n"  // a6  = convert to table address
+      "addx4   a7,  a8,  a13              \n"  // a7  = convert to table address
+      "addx8   a8,  a9,  a13              \n"  // a8  = convert to table address
+      "l32i.n  a5,  a6,  4                \n"  // a5  = pixel_tbl[blue component]
+      "l32i.n  a6,  a7,  0                \n"  // a6  = pixel_tbl[green component]
+      "l32i.n  a7,  a8,  4                \n"  // a7  = pixel_tbl[red component]
 
-      // ロード待ちのため、先の処理を間に挟む
-      "extui   a8,  a10, 16,  5           \n"  // a8  = 青成分取得
-      "extui   a9,  a10, 21,  6           \n"  // a9  = 緑成分取得
-      "extui   a10, a10, 27,  5           \n"  // a10 = 赤成分取得
+      // Interleave subsequent processing while waiting for load
+      "extui   a8,  a10, 16,  5           \n"  // a8  = get blue component
+      "extui   a9,  a10, 21,  6           \n"  // a9  = get green component
+      "extui   a10, a10, 27,  5           \n"  // a10 = get red component
 
-      "addx2   a5,  a5,  a6               \n"  // a5  = (青 << 1) + 緑
-      "addx2   a5,  a5,  a7               \n"  // a5  = (青緑 << 1) + 赤 2ピクセル目 上側の RGB成分 完成
+      "addx2   a5,  a5,  a6               \n"  // a5  = (blue << 1) + green
+      "addx2   a5,  a5,  a7               \n"  // a5  = (blue+green << 1) + red: pixel 2 upper RGB component complete
 //////////////////
 
-      "addx8   a7,  a8,  a13              \n"  // a7  = テーブルアドレスに変換
-      "addx4   a8,  a9,  a13              \n"  // a8  = テーブルアドレスに変換
-      "addx8   a9,  a10, a13              \n"  // a9  = テーブルアドレスに変換
-      "l32i.n  a6,  a7,  4                \n"  // a6  = pixel_tbl[青成分]
-      "l32i.n  a7,  a8,  0                \n"  // a7  = pixel_tbl[緑成分]
-      "l32i.n  a8,  a9,  4                \n"  // a8  = pixel_tbl[赤成分]
+      "addx8   a7,  a8,  a13              \n"  // a7  = convert to table address
+      "addx4   a8,  a9,  a13              \n"  // a8  = convert to table address
+      "addx8   a9,  a10, a13              \n"  // a9  = convert to table address
+      "l32i.n  a6,  a7,  4                \n"  // a6  = pixel_tbl[blue component]
+      "l32i.n  a7,  a8,  0                \n"  // a7  = pixel_tbl[green component]
+      "l32i.n  a8,  a9,  4                \n"  // a8  = pixel_tbl[red component]
 
-      // ロード待ちのため、先の処理を間に挟む
-      "l32i.n  a15, a2,  36               \n"  // a15にマスクパターンを読み込み
+      // Interleave subsequent processing while waiting for load
+      "l32i.n  a15, a2,  36               \n"  // load mask pattern into a15
 
-      "addx2   a6,  a6,  a7               \n"  // a6  = (青 << 1) + 緑
-      "addx2   a6,  a6,  a8               \n"  // a6  = (青緑 << 1) + 赤 2ピクセル目 下側の RGB成分 完成
+      "addx2   a6,  a6,  a7               \n"  // a6  = (blue << 1) + green
+      "addx2   a6,  a6,  a8               \n"  // a6  = (blue+green << 1) + red: pixel 2 lower RGB component complete
 
-// この時点で a3,a4,a5,a6 に 合計4ピクセル分のデータが入った状態になっている
-// ここから、パネル上側と下側のRGB成分が隣接し6bit単位となった状態に変換する
+// At this point, a3, a4, a5, a6 contain data for a total of 4 pixels
+// From here, convert so that upper and lower panel RGB components are adjacent in 6-bit units
 
       "and     a7,  a15, a3               \n"  // a7  = upper_1_odd
       "and     a8,  a15, a4               \n"  // a8  = lower_1_odd
       "and     a9,  a15, a5               \n"  // a9  = upper_2_odd
       "and     a10, a15, a6               \n"  // a10 = lower_2_odd
-      "slli    a15, a15, 3                \n"  // a15 マスクパターンを反転
+      "slli    a15, a15, 3                \n"  // invert a15 mask pattern
       "and     a3,  a15, a3               \n"  // a3  = upper_1_even
       "and     a4,  a15, a4               \n"  // a4  = lower_1_even
       "and     a5,  a15, a5               \n"  // a5  = upper_2_even
       "and     a6,  a15, a6               \n"  // a6  = lower_2_even
 
-// 出力処理の準備
-      "l32i.n  a15, a2,  16               \n"  // a15 に mixdata アドレスを代入
+// Output preparation
+      "l32i.n  a15, a2,  16               \n"  // assign mixdata address to a15
 
       "addx8   a6,  a6,  a5               \n"  // a6 = (lower_2_even << 3) + upper_2_even
       "addx8   a5,  a4,  a3               \n"  // a5 = (lower_1_even << 3) + upper_1_even
       "addx8   a4,  a10, a9               \n"  // a4 = (lower_2_odd << 3) + upper_2_odd
       "addx8   a3,  a8,  a7               \n"  // a3 = (lower_1_odd << 3) + upper_1_odd
 
-      "l32i.n  a10, a15, 28               \n"  // a7 に mixdata末尾の値を代入 (7*sizeof(uint32_t) = 28)
-      "mov.n   a9,  a0                    \n"  // a9 に 出力先 アドレスをコピー
-      "addi.n  a0,  a0,  4                \n"  // ★a0 出力先アドレス を1進める
+      "l32i.n  a10, a15, 28               \n"  // assign last value of mixdata to a7 (7*sizeof(uint32_t) = 28)
+      "mov.n   a9,  a0                    \n"  // copy output destination address to a9
+      "addi.n  a0,  a0,  4                \n"  // *a0 advance output destination address by 1
 
-      "s32i.n  a10, a9,  0                \n"  // mixdata 末尾のデータを出力先にセット
+      "s32i.n  a10, a9,  0                \n"  // set last mixdata data to output destination
 
-// ここから出力
-// RGB成分 と mixdata(Y座標情報+OE信号) を合わせた16bitデータを2ピクセル分32bit纏めて出力 を 8回(transfer_period_count) 行う
+// Output starts here
+// Combine RGB components with mixdata (Y coordinate info + OE signal) into 16-bit data, output 2 pixels as 32-bit, 8 times (transfer_period_count)
 
       "l32i.n   a8,  a15, 0               \n"  // a8  = mixdata[0]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  0,   6          \n"  // a7 = a3 todd1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // odd1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  0,   6          \n"  // a7 = a3 odd1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift odd1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = odd1 + mixdata
-      "extui    a7,  a4,  0,   6          \n"  // a7 = a4 odd2 6ビット取得
+      "extui    a7,  a4,  0,   6          \n"  // a7 = a4 odd2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = odd2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 4               \n"  // a8 = mixdata[1]
-      "add.n    a9,  a14, a9              \n"  // 出力先アドレス += len32
-      "extui    a7,  a5,  3,   6          \n"  // a7 = a5 even1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // even1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // output destination address += len32
+      "extui    a7,  a5,  3,   6          \n"  // a7 = a5 even1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift even1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = even1 + mixdata
-      "extui    a7,  a6,  3,   6          \n"  // a7 = a6 even2 6ビット取得
+      "extui    a7,  a6,  3,   6          \n"  // a7 = a6 even2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = even2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
 
       "l32i.n   a8,  a15, 8               \n"  // a8  = mixdata[2]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  6,   6          \n"  // a7 = a3 odd1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // odd1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  6,   6          \n"  // a7 = a3 odd1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift odd1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = odd1 + mixdata
-      "extui    a7,  a4,  6,   6          \n"  // a7 = a4 odd2 6ビット取得
+      "extui    a7,  a4,  6,   6          \n"  // a7 = a4 odd2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = odd2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 12              \n"  // a8 = mixdata[3]
-      "add.n    a9,  a14, a9              \n"  // 出力先アドレス += len32
-      "extui    a7,  a5,  9,   6          \n"  // a7 = a5 even1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // even1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // output destination address += len32
+      "extui    a7,  a5,  9,   6          \n"  // a7 = a5 even1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift even1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = even1 + mixdata
-      "extui    a7,  a6,  9,   6          \n"  // a7 = a6 even2 6ビット取得
+      "extui    a7,  a6,  9,   6          \n"  // a7 = a6 even2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = even2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
 
       "l32i.n   a8,  a15, 16              \n"  // a8  = mixdata[4]
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "extui    a7,  a3,  12,  6          \n"  // a7 = a3 odd1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // odd1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "extui    a7,  a3,  12,  6          \n"  // a7 = a3 odd1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift odd1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = odd1 + mixdata
-      "extui    a7,  a4,  12,  6          \n"  // a7 = a4 odd2 6ビット取得
+      "extui    a7,  a4,  12,  6          \n"  // a7 = a4 odd2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = odd2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
       "l32i.n   a8,  a15, 20              \n"  // a8 = mixdata[5]
-      "add.n    a9,  a14, a9              \n"  // 出力先アドレス += len32
-      "extui    a7,  a5,  15,  6          \n"  // a7 = a5 even1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // even1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // output destination address += len32
+      "extui    a7,  a5,  15,  6          \n"  // a7 = a5 even1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift even1 data left by 16 bits
       "add.n    a8,  a7,  a8              \n"  // a8 = even1 + mixdata
-      "extui    a7,  a6,  15,  6          \n"  // a7 = a6 even2 6ビット取得
+      "extui    a7,  a6,  15,  6          \n"  // a7 = a6 even2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = even2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
-      // 最後の2回は mixdata の取得を省略(a10に取得しておいた値を再利用する)
-      "add.n    a9,  a14, a9              \n"  // a9 出力先アドレス += len32
-      "srli     a7,  a3,  18              \n"  // a7 = a3 odd1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // odd1のデータを左16bitシフト
+      // Skip mixdata fetch for the last 2 iterations (reuse value previously fetched into a10)
+      "add.n    a9,  a14, a9              \n"  // a9 output destination address += len32
+      "srli     a7,  a3,  18              \n"  // a7 = a3 odd1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift odd1 data left by 16 bits
       "add.n    a8,  a7,  a10             \n"  // a8 = odd1 + mixdata
-      "srli     a7,  a4,  18              \n"  // a7 = a4 odd2 6ビット取得
+      "srli     a7,  a4,  18              \n"  // a7 = a4 odd2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = odd2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
-      "add.n    a9,  a14, a9              \n"  // 出力先アドレス += len32
-      "srli     a7,  a5,  21              \n"  // a7 = a5 even1 6ビット取得
-      "slli     a7,  a7,  16              \n"  // even1のデータを左16bitシフト
+      "add.n    a9,  a14, a9              \n"  // output destination address += len32
+      "srli     a7,  a5,  21              \n"  // a7 = a5 even1: get 6 bits
+      "slli     a7,  a7,  16              \n"  // shift even1 data left by 16 bits
       "add.n    a8,  a7,  a10             \n"  // a8 = even1 + mixdata
-      "srli     a7,  a6,  21              \n"  // a7 = a6 even2 6ビット取得
+      "srli     a7,  a6,  21              \n"  // a7 = a6 even2: get 6 bits
       "add.n    a7,  a7,  a8              \n"  // a7 = even2 + mixdata
-      "s32i.n   a7,  a9,  0               \n"  // a7 の値を出力先にセット
+      "s32i.n   a7,  a9,  0               \n"  // set a7 value to output destination
 
 "HUB75_DRAW565_LOOP_END:                     \n"
 
-      "l32i.n  a4,  a2,  28               \n" // a4に xe_idx を代入
-      "l32i.n  a5,  a2,  20               \n" // a5に xe_tbl を代入
-      "l32i.n  a9,  a2,  40               \n" // a9に mixdata テーブル更新用の値を取得
-      "beqi    a4,  8,   HUB75_EXIT565    \n" // xe_idx が終端に達していたら処理を終える
-      "addx2   a6,  a4,  a5               \n" // a6 に xeテーブル現在インデクスのアドレス
-      "l16ui   a3,  a6,  0                \n" // a3 に現在の xe値
+      "l32i.n  a4,  a2,  28               \n" // a4 = assign xe_idx
+      "l32i.n  a5,  a2,  20               \n" // a5 = assign xe_tbl
+      "l32i.n  a9,  a2,  40               \n" // a9 = get mixdata table update value
+      "beqi    a4,  8,   HUB75_EXIT565    \n" // if xe_idx has reached the end, exit processing
+      "addx2   a6,  a4,  a5               \n" // a6 = address of current xe table index
+      "l16ui   a3,  a6,  0                \n" // a3 = current xe value
       "srli    a3 , a3,  1                \n" // a3 >>= 1
-// ここから mixdata の値を更新、 xe の位置を再設定
+// From here, update mixdata values and reset xe position
 "HUB75_BR565LOOP_START:             \n"
-        "mov     a5,  a3                    \n" // a5 に前回分の xe値 a3 を移す
-        "l16ui   a3,  a6,  2                \n" // a3 に新しい xe値 を代入
-        "addi.n  a6,  a6,  2                \n" // a6 xeテーブル位置をひとつ進める
+        "mov     a5,  a3                    \n" // move previous xe value a3 to a5
+        "l16ui   a3,  a6,  2                \n" // a3 = assign new xe value
+        "addi.n  a6,  a6,  2                \n" // a6 advance xe table position by one
         "addi.n  a4,  a4,  1                \n" // a4 ++xe_idx
-        "addx4   a8,  a4,  a15              \n" // A8 に更新対象の mixdata のアドレスをセット
-        "srli    a3,  a3,  1                \n" // A3 >>= 1
-        "s32i.n  a9,  a8,  0                \n" // mixdata 更新
-      "bge     a5,  a3,  HUB75_BR565LOOP_START     \n" // xe 値が同値なら BR_LOOP 再トライ
-      "s32i.n  a4,  a2,  28               \n" // xe_idx の値を保存
-      "sub     a3,  a3,  a5               \n" // 新しい xe値から前回のxe値を引き、差分を得る
-      "j HUB75_DRAW565_LOOP_START         \n" // a3 (xe) が刷新されたので再度先頭からループ
+        "addx4   a8,  a4,  a15              \n" // a8 = set address of target mixdata to update
+        "srli    a3,  a3,  1                \n" // a3 >>= 1
+        "s32i.n  a9,  a8,  0                \n" // update mixdata
+      "bge     a5,  a3,  HUB75_BR565LOOP_START     \n" // if xe values are equal, retry BR_LOOP
+      "s32i.n  a4,  a2,  28               \n" // save xe_idx value
+      "sub     a3,  a3,  a5               \n" // subtract previous xe value from new xe value to get the difference
+      "j HUB75_DRAW565_LOOP_START         \n" // a3 (xe) has been updated, loop from the beginning again
 
 
 "HUB75_EXIT565:                   \n"
@@ -997,7 +997,7 @@ namespace lgfx
   }
 
 /*
-// C++版 draw332
+// C++ version draw332
   static void hub75Draw332_cpp(asm_work_t* work)
   {
     uint8_t* src8_h = (uint8_t*)(work->s32h);
@@ -1012,15 +1012,15 @@ namespace lgfx
     {
       do
       {
-        // RGB332の値を基にガンマテーブルを適用する
-        // このテーブルの中身は単にガンマ補正をするだけでなく、
-        // BGR順に1ビットずつ並んだ状態に変換する処理を兼ねている。
+        // Apply gamma table based on the RGB332 value.
+        // This table not only applies gamma correction, but also
+        // converts to a format where bits are arranged one per BGR in sequence.
         uint32_t rgb_upper_1 = work->pixel_tbl[*src8_h++];
         uint32_t rgb_upper_2 = work->pixel_tbl[*src8_h++];
         uint32_t rgb_lower_1 = work->pixel_tbl[*src8_l++];
         uint32_t rgb_lower_2 = work->pixel_tbl[*src8_l++];
 
-        // パラレルで同時に送信する6bit分のRGB成分(画面の上半分と下半分)が隣接するように纏める。
+        // Combine so that 6-bit RGB components (upper and lower halves of the screen) sent in parallel are adjacent.
         uint32_t rgb_1 = rgb_upper_1 + (rgb_lower_1 << 3);
         uint32_t rgb_2 = rgb_upper_2 + (rgb_lower_2 << 3);
 
@@ -1040,7 +1040,7 @@ namespace lgfx
           pixel_1 = rgb_1 & 0x3F;
           pixel_2 += mixdata[i];
           pixel_1 <<= 16;
-          // 横２列ぶん同時にバッファにセットする
+          // Set two columns simultaneously to the buffer
           d32[++i * len32] = pixel_1 + pixel_2;
         } while (i < 5);  // TRANSFER_PERIOD_COUNT_332;
 
@@ -1058,7 +1058,7 @@ namespace lgfx
     }
   }
 
- // C++版 draw565
+ // C++ version draw565
   static void hub75Draw565_cpp(asm_work_t* work)
   {
     uint32_t* d32 = work->d32;
@@ -1073,12 +1073,12 @@ namespace lgfx
     {
       do
       {
-        // 16bit RGB565を32bit変数に2ピクセル纏めて取り込む。(画面の上半分用)
+        // Load 2 pixels at once into a 32-bit variable in 16-bit RGB565 format. (for upper half of screen)
         uint32_t rgb565x2_upper = *work->s32h++;
-        // 画面の下半分用のピクセルも同様に2ピクセル纏めて取り込む
+        // Load 2 pixels at once similarly for the lower half of the screen
         uint32_t rgb565x2_lower = *work->s32l++;
 
-        // R,G,Bそれぞれの成分に分離する。2x2=4ピクセルまとめて処理することで演算回数を削減する
+        // Separate into R, G, B components. Process 2x2=4 pixels at once to reduce the number of operations
         uint32_t r_upper_1 = rgb565x2_upper >> 11;
         uint32_t r_lower_1 = rgb565x2_lower >> 11;
         uint32_t g_upper_1 = rgb565x2_upper >> 5;
@@ -1103,10 +1103,10 @@ namespace lgfx
         b_upper_2 >>= 16;
         b_lower_2 >>= 16;
 
-        // RGBそれぞれ64階調値を元にガンマテーブルを適用する
-        // このテーブルの中身は単にガンマ補正をするだけでなく、
-        // 各ビットを3bit間隔に変換する処理を兼ねている。
-        // 具体的には  0bABCDEFGH  ->  0bA__B__C__D__E__F__G__H__ のようになる
+        // Apply gamma table based on each 64-level RGB value.
+        // This table not only applies gamma correction, but also
+        // converts each bit to 3-bit spacing.
+        // Specifically: 0bABCDEFGH -> 0bA__B__C__D__E__F__G__H__
         r_upper_1 = pixel_tbl[r_upper_1 << 1];
         r_lower_1 = pixel_tbl[r_lower_1 << 1];
         r_upper_2 = pixel_tbl[r_upper_2 << 1];
@@ -1120,8 +1120,8 @@ namespace lgfx
         b_upper_2 = pixel_tbl[b_upper_2 << 1];
         b_lower_2 = pixel_tbl[b_lower_2 << 1];
 
-        // テーブルから取り込んだ値は3bit間隔となっているので、
-        // R,G,Bそれぞれが互いを避けるようにビットシフトすることでまとめることができる。
+        // Since the values loaded from the table are at 3-bit intervals,
+        // R, G, B can be combined by bit-shifting each to avoid overlapping.
         g_upper_1 += b_upper_1 << 1;
         g_lower_1 += b_lower_1 << 1;
         g_upper_2 += b_upper_2 << 1;
@@ -1131,8 +1131,8 @@ namespace lgfx
         uint32_t rgb_upper_2 = r_upper_2 + (g_upper_2 << 1);
         uint32_t rgb_lower_2 = r_lower_2 + (g_lower_2 << 1);
 
-        // 上記の変数の中身は BGRBGRBGRBGR… の順にビットが並んだ状態となる
-        // これを、各色の0,2,4,6ビットと1,3,5,7ビットの成分に分離する
+        // The bits in the above variables are arranged in BGRBGRBGRBGR... order.
+        // Separate these into even bit (0,2,4,6) and odd bit (1,3,5,7) components of each color.
         uint32_t rgb_upper_1_even = rgb_upper_1 & 0b00111000111000111000111000111000;
         uint32_t rgb_upper_1_odd  = rgb_upper_1 & 0b11000111000111000111000111000111;
         uint32_t rgb_lower_1_even = rgb_lower_1 & 0b00111000111000111000111000111000;
@@ -1142,7 +1142,7 @@ namespace lgfx
         uint32_t rgb_lower_2_even = rgb_lower_2 & 0b00111000111000111000111000111000;
         uint32_t rgb_lower_2_odd  = rgb_lower_2 & 0b11000111000111000111000111000111;
 
-        // パラレルで同時に送信する6bit分のRGB成分(画面の上半分と下半分)が隣接するように纏める。
+        // Combine so that 6-bit RGB components (upper and lower halves of the screen) sent in parallel are adjacent.
         uint32_t rgb_even_1 = (rgb_lower_1_even    ) + (rgb_upper_1_even >> 3);
         uint32_t rgb_odd_1  = (rgb_lower_1_odd << 3) + (rgb_upper_1_odd      );
         uint32_t rgb_even_2 = (rgb_lower_2_even    ) + (rgb_upper_2_even >> 3);
@@ -1160,12 +1160,12 @@ namespace lgfx
           rgb_odd_2 >>= 6;
           rgb_odd_1 >>= 6;
           odd_2 += mixdata[i] + (odd_1 << 16);
-          // 奇数番ビット成分を横２列ぶん同時にバッファにセットする
+          // Set odd bit components for two columns simultaneously to the buffer
           d32[++i * len32] = odd_2;
           even_2 += mixdata[i] + (even_1 << 16);
           rgb_even_2 >>= 6;
           rgb_even_1 >>= 6;
-          // 偶数番ビット成分を横２列ぶん同時にバッファにセットする
+          // Set even bit components for two columns simultaneously to the buffer
           d32[++i * len32] = even_2;
         } while (i < 8); // TRANSFER_PERIOD_COUNT565
         ++d32;
@@ -1209,7 +1209,7 @@ namespace lgfx
 
     ESP_EARLY_LOGV("Bus_HUB75","esp_intr_alloc success ");
 
-    // タスク通知が遅れて届いている可能性があるのでここで待機、破棄する
+    // Task notification may have arrived late, so wait here and discard it
     ulTaskNotifyTake( pdTRUE, 1);
 
     me->dmaTask_inner();
@@ -1261,18 +1261,18 @@ namespace lgfx
       y = (y + 1) & ((panel_height>>1) - 1);
 
       {
-      // SHIFTREG_ABCのY座標情報をセット;
+      // Set SHIFTREG_ABC Y coordinate information;
         uint32_t poi = (~y) & ((panel_height >> 1) - 1);
         d32[poi                      ] = _mask_pin_a_clk | _mask_oe | _mask_pin_c_dat;
         d32[poi + (panel_height >> 1)] = _mask_pin_a_clk | _mask_oe | _mask_pin_c_dat;
         for (int i = 0; i < _dma_desc_set; ++i)
-        { // 以前のY座標ビットを消去;
+        { // Clear previous Y coordinate bits;
           poi = (poi + 1) & ((panel_height >> 1) - 1);
           d32[poi                      ] = _mask_pin_a_clk | _mask_oe;
           d32[poi + (panel_height >> 1)] = _mask_pin_a_clk | _mask_oe;
         }
-        // 末尾にラッチを追加;
-        // パネルの仕様の差により、LATピンとBピンどちらがラッチに使用されているか不明なため、BとLATの両方とも立てる;
+        // Add latch at the end;
+        // Since it is unknown whether the LAT pin or B pin is used for latching due to panel specification differences, both B and LAT are asserted;
         d32[panel_height - 1] |= _mask_pin_b_lat | _mask_lat | _mask_lat << 16;
       }
 
@@ -1296,17 +1296,17 @@ namespace lgfx
       work.xe_idx = 0;
       work.mix_value = yy_oe;
 
-      // データ生成用の関数をコール
+      // Call the data generation function
       fp_draw(&work);
 
       d32 = &dst[len32];
 
-      // 無データ,点灯のみの期間の先頭の点灯防止処理
+      // Prevent lighting at the start of the no-data, lighting-only period
       d32[0 - len32] |= _mask_oe;
       d32[1 - len32] |= (xe_tbl[transfer_period_count - 1] & 1) ? (_mask_oe & ~0xFFFF) : _mask_oe;
 
       d32 += len32;
-      // データのラッチ及びラッチ直後の点灯防止処理
+      // Data latch and lighting prevention immediately after latch
       for (int i = 0; i < transfer_period_count; ++i)
       {
         d32[len32 * i - 1] |= _mask_lat;
@@ -1314,8 +1314,8 @@ namespace lgfx
         d32[len32 * i + 1] |= (xe_tbl[i] & 1) ? (_mask_oe & ~0xFFFF) :  _mask_oe;
       }
 
-      // 作画中に次の割込みが発生した場合は、ビジー状態が続くことを回避するため処理をスキップする
-      ulTaskNotifyTake( pdTRUE, 0); // 通知が届いていたら捨てる
+      // If the next interrupt occurs during drawing, skip processing to avoid sustained busy state
+      ulTaskNotifyTake( pdTRUE, 0); // discard notification if one has arrived
     }
   }
 

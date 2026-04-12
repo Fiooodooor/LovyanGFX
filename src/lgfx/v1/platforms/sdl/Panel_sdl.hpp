@@ -40,7 +40,7 @@ namespace lgfx
     SDL_Texture* texture_frameimage = nullptr;
     Panel_sdl* panel = nullptr;
 
-// 外枠
+// Outer frame
     const void* frame_image = 0;
     uint_fast16_t frame_width = 0;
     uint_fast16_t frame_height = 0;

@@ -143,7 +143,7 @@ namespace lgfx
       if (!isEmbeddedMemory(ptr))
       {
         if (ptr_start < ptr_end) {
-          // 4096byte以上離れている場合はライトバック
+          // Write back if more than 4096 bytes apart
           if ((ptr + bytes + 4096 < ptr_start)
           || (ptr - 4096 > ptr_end)) {
             cacheWriteBack(ptr_start, (int)ptr_end - (int)ptr_start);
@@ -335,7 +335,7 @@ namespace lgfx
     {
       do
       {
-        param->fp_copy(_lines_buffer[x], y, y + 1, param); /// xとyを入れ替えて処理する;
+        param->fp_copy(_lines_buffer[x], y, y + 1, param); /// Process with x and y swapped;
         if (x != xe)
         {
           x += ax;
@@ -526,7 +526,7 @@ namespace lgfx
     if (src_y < dst_y) add = -add;
     int32_t pos = (src_y < dst_y) ? h - 1 : 0;
 
-    /// PSRAMを使用している場合、PSRAM to PSRAMのmemcpyがデータ破損を起こす場合があるため、一旦ローカルの配列を経由してコピーを行う;
+    /// When using PSRAM, memcpy from PSRAM to PSRAM may cause data corruption, so copy through a local array first;
     auto buf = (uint8_t*)alloca(len);
     do
     {

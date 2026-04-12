@@ -261,7 +261,7 @@ namespace lgfx
         GPEC = sda; // hi
 
         for (int i = nopwait>>1; i; --i) { __asm__ __volatile__("nop"); }
-        // SDAがHIGHになるまでクロック送出しながら待機する。;
+        // Wait while sending clock pulses until SDA becomes HIGH.;
         int retry = 9;
         while (!(GPI & sda) && (--retry))
         {

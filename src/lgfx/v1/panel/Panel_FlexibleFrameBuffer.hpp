@@ -25,8 +25,8 @@ namespace lgfx
  {
 //----------------------------------------------------------------------------
 
-// 1ピクセル単位で描画を行うフレームバッファ
-// 動作は重いが、派生クラスで _draw_pixel_inner / _read_pixel_inner を overrideするだけで使用できる。
+// Frame buffer that draws on a per-pixel basis
+// Performance is slow, but it can be used simply by overriding _draw_pixel_inner / _read_pixel_inner in derived classes.
 
   struct Panel_FlexibleFrameBuffer : public Panel_Device
   {

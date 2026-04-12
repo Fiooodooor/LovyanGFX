@@ -129,10 +129,10 @@ namespace lgfx
 
     bool open(const char* path) override {
       fs::File file = _fs->open(path, "r");
-      // この邪悪なmemcpyは、Seeed_FSのFile実装が所有権moveを提供してくれないのにデストラクタでcloseを呼ぶ実装になっているため、
-      // 正攻法ではFileをクラスメンバに保持できない状況を打開すべく応急処置的に実装したものです。
+      // This evil memcpy exists because Seeed_FS's File implementation does not provide ownership move but calls close in the destructor,
+      // making it impossible to hold a File as a class member through normal means. This is a stopgap workaround.
       memcpy(&_file, &file, sizeof(fs::File));
-      // memsetにより一時変数の中身を吹っ飛ばし、デストラクタによるcloseを予防します。
+      // memset clears the contents of the temporary variable to prevent close from being called by the destructor.
       memset(&file, 0, sizeof(fs::File));
       _fp = &_file;
       return _file;

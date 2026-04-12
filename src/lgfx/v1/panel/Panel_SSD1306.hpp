@@ -82,10 +82,10 @@ namespace lgfx
     void setBrightness(uint8_t brightness) override;
     void display(uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h) override;
 
-    /// OLEDパネルのCOMピン配置を設定する。;
+    /// Sets the COM pin configuration of the OLED panel.;
     /// This command sets the COM signals pin configuration to match the OLED panel hardware layout.
     /// see SSD1306 data sheet  ( 10.1.18 Set COM Pins Hardware Configuration (DAh)
-    /// @param data SETCOMPINSで送信するデータ (0x02 or 0x12 or 0x22 or 0x32)
+    /// @param data Data to send with SETCOMPINS (0x02 or 0x12 or 0x22 or 0x32)
     void setComPins(uint8_t data = 0x02);
 
   protected:
@@ -224,19 +224,19 @@ namespace lgfx
         0xC8,           //Common output = revers
         0xA3,           //LCD bias = 1/7
 
-  //内部レギュレータON
+  // Internal regulator ON
         0x2C,
         //delay(2);
         0x2E,
         //delay(2);
         0x2F,
 
-  //コントラスト設定
+  // Contrast setting
         0x23,           //Vo voltage regulator internal resistor ratio set
         0x81,           //Electronic volume mode set
         0x1C,           //Electronic volume register set
 
-  //表示設定
+  // Display setting
         0xA4,           //Display all point ON/OFF = normal
         0x40,           //Display start line = 0
         // 0xA7,           //Display normal/revers = normal

@@ -7,7 +7,7 @@
 
 static LGFX lcd;
 
-RTC_DATA_ATTR int bootCount = 0;  // 起動回数を保持（deepsleepしても値は消えない）
+RTC_DATA_ATTR int bootCount = 0;  // Retains boot count (value persists through deep sleep)
 
 void setup(void)
 {
@@ -18,14 +18,14 @@ void setup(void)
   case ESP_SLEEP_WAKEUP_TIMER :
   case ESP_SLEEP_WAKEUP_TOUCHPAD :
   case ESP_SLEEP_WAKEUP_ULP :
-    lcd.init_without_reset(); // deep sleep からの復帰時はinit_without_resetを呼び出す。
+    lcd.init_without_reset(); // Call init_without_reset when waking from deep sleep.
     break;
 
   default :
-    lcd.init();            // 通常起動時はinitを呼び出す。
+    lcd.init();            // Call init on normal startup.
     lcd.clear(TFT_WHITE);
     lcd.clear(TFT_BLACK);
-    lcd.startWrite();      // 背景を描画しておく
+    lcd.startWrite();      // Draw the background
     lcd.setColorDepth(24);
     {
       LGFX_Sprite sp(&lcd);
@@ -44,18 +44,18 @@ void setup(void)
 
   ++bootCount;
   lcd.setCursor(bootCount*6, bootCount*8);
-  lcd.setTextColor(TFT_WHITE, TFT_BLACK);  // 一度白黒反転した状態を描画する
+  lcd.setTextColor(TFT_WHITE, TFT_BLACK);  // Draw once with inverted white/black colors
   lcd.print("DeepSleep test : " + String(bootCount));
   lcd.setCursor(bootCount*6, bootCount*8);
   lcd.setTextColor(TFT_BLACK, TFT_WHITE);
   lcd.print("DeepSleep test : " + String(bootCount));
-  lcd.powerSaveOn(); // 省電力指定 M5Stack CoreInkで電源オフ時に色が薄くならないようにする
-  lcd.waitDisplay(); // 待機
+  lcd.powerSaveOn(); // Enable power saving. Prevents colors from fading when M5Stack CoreInk powers off.
+  lcd.waitDisplay(); // Wait for completion
 
   auto pin_rst = (gpio_num_t)lcd.getPanel()->config().pin_rst;
   if ((uint32_t)pin_rst < GPIO_NUM_MAX)
   {
-    // RSTピンをRTC_GPIOで管理しhigh状態を維持する
+    // Manage RST pin with RTC_GPIO and keep it in high state
     rtc_gpio_set_level(pin_rst, 1);
     rtc_gpio_set_direction(pin_rst, RTC_GPIO_MODE_OUTPUT_ONLY);
     rtc_gpio_init(pin_rst);
@@ -68,7 +68,7 @@ void setup(void)
     auto pin_bl = (gpio_num_t)((lgfx::Light_PWM*)light)->config().pin_bl;
     if ((uint32_t)pin_bl < GPIO_NUM_MAX)
     {
-      // BackLightピンをRTC_GPIOで管理しhigh状態を維持する
+      // Manage backlight pin with RTC_GPIO and keep it in high state
       rtc_gpio_set_level(pin_bl, 1);
       rtc_gpio_set_direction(pin_bl, RTC_GPIO_MODE_OUTPUT_ONLY);
       rtc_gpio_init(pin_bl);

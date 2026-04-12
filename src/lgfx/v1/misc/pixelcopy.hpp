@@ -177,7 +177,7 @@ namespace lgfx
       return last;
     }
 #if 0
-// 最適化前の関数
+// Pre-optimization function
     template <typename TDst, typename TPalette>
     static uint32_t copy_palette_affine(void* __restrict dst, uint32_t index, uint32_t last, pixelcopy_t* __restrict param)
     {
@@ -196,7 +196,7 @@ namespace lgfx
       return index;
     }
 #else
-// 最適化後の関数
+// Post-optimization function
     template <typename TDst, typename TPalette>
     static uint32_t copy_palette_affine(void* __restrict dst, uint32_t index, uint32_t last, pixelcopy_t* __restrict param)
     {

@@ -229,7 +229,7 @@ namespace lgfx
     }
   }
 
-  // /// WiFi,BT使用状況確認
+  // /// WiFi, BT usage status check
   // static bool checkWireless(void)
   // {
   //   return *reg(DPORT_WIFI_CLK_EN_REG) & 0x7FF;
@@ -264,7 +264,7 @@ namespace lgfx
       _cache_flip = (cache_old == _cache[0]) ? _cache[1] : _cache[0];
       i2s_dev->int_clr.val = ~0u;
 
-// DMAの準備待ちウェイト …無線使用中はウェイトを増やす
+// DMA preparation wait... increase wait when wireless is in use
 //    size_t wait = (16 << checkWireless()) + (_div_num >> 2);
       size_t wait = 16 + (_div_num >> 2);
       do { __asm__ __volatile__ ("nop"); } while (--wait);
@@ -278,7 +278,7 @@ namespace lgfx
       count -= idx_e;
       if (!count) return 0;
       
-      // 送り残しがあれば次回分のキャッシュに移しておく;
+      // If there are remaining bytes, move them to the next cache;
       *(uint32_t*)_cache_flip = *(uint32_t*)(&cache_old[idx_e]);
     }
 
@@ -287,7 +287,7 @@ namespace lgfx
       return count;
     }
 
-    // ここから DMAで送信しきれなかった端数ぶんの送信処理
+    // From here, send the remaining bytes that could not be sent via DMA
     if (i2s_dev->out_link.val)
     {
 #if defined (CONFIG_IDF_TARGET_ESP32S2)

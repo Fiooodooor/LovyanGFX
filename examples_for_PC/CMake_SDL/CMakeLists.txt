@@ -4,8 +4,8 @@ project(LGFX_SDL)
 
 add_definitions(-DLGFX_SDL)
 
-# ビルド対象にするファイルを指定する;
-# LovyanGFXのあるパスと位置関係を変えた場合は相対パス記述を環境に合わせて調整すること;
+# Specify the files to include in the build;
+# If you change the relative position of LovyanGFX, adjust the relative path descriptions to match your environment;
 file(GLOB Target_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS 
     *.cpp
     ../../../LovyanGFX/src/lgfx/Fonts/efont/*.c
@@ -19,25 +19,25 @@ file(GLOB Target_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS
     )
 add_executable (LGFX_SDL ${Target_Files})
 
-# includeするファイルのパスを指定する;
-# LovyanGFXのあるパスと位置関係を変えた場合は相対パス記述を環境に合わせて調整すること;
+# Specify the path of the files to include;
+# If you change the relative position of LovyanGFX, adjust the relative path descriptions to match your environment;
 target_include_directories(LGFX_SDL PUBLIC "../../../LovyanGFX/src/")
 
 IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 
-# Linux環境の場合;
-# SDL2_INCLUDE_DIRS と SDL2_LIBRARIES を事前に設定しておく;
+# For Linux environments;
+# Set up SDL2_INCLUDE_DIRS and SDL2_LIBRARIES in advance;
     find_package(SDL2 REQUIRED SDL2)
     include_directories(${SDL2_INCLUDE_DIRS})
     target_link_libraries(LGFX_SDL -lpthread ${SDL2_LIBRARIES})
 
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
 
-# Windows環境の場合;
-# SDL2を配置したパス内のincludeのパスを指定する;
+# For Windows environments;
+# Specify the include path within the directory where SDL2 is installed;
     target_include_directories(LGFX_SDL PUBLIC "C:/SDL2/include")
 
-# SDL2を配置したパス内の.libファイルのパスを指定する;
+# Specify the path to the .lib files within the directory where SDL2 is installed;
     target_link_libraries(LGFX_SDL PUBLIC "C:/SDL2/lib/x64/SDL2.lib")
 
 
@@ -47,7 +47,7 @@ ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Windows")
 
 ELSEIF (CMAKE_SYSTEM_NAME MATCHES "Darwin")
 
-# MacOS(Darwin)環境の場合;
+# For MacOS (Darwin) environments;
     find_package(SDL2 REQUIRED COMPONENTS SDL2)
     target_link_libraries(LGFX_SDL PRIVATE SDL2::SDL2)
 

@@ -96,13 +96,13 @@ namespace lgfx
         if (gpio < 0)
         {
           switch (event.key.keysym.sym)
-          { /// M5StackのBtnA～BtnCのエミュレート;
+          { /// Emulate M5Stack BtnA~BtnC;
           // case SDLK_LEFT:  gpio = 39; break;
           // case SDLK_DOWN:  gpio = 38; break;
           // case SDLK_RIGHT: gpio = 37; break;
           // case SDLK_UP:    gpio = 36; break;
     
-          /// L/Rキーで画面回転
+          /// L/R keys to rotate screen
           case SDLK_r:
           case SDLK_l:
             if (event.type == SDL_KEYDOWN && event.key.keysym.mod == _keymod) 
@@ -120,7 +120,7 @@ namespace lgfx
             }
             break;
 
-          /// 1～6キーで画面拡大率変更
+          /// 1~6 keys to change screen scaling ratio
           case SDLK_1: case SDLK_2: case SDLK_3: case SDLK_4: case SDLK_5: case SDLK_6:
             if (event.type == SDL_KEYDOWN && event.key.keysym.mod == _keymod) 
             {
@@ -203,15 +203,15 @@ namespace lgfx
     }
   }
 
-  /// デバッガでステップ実行されていることを検出するスレッド用関数。
+  /// Thread function to detect when the debugger is step-executing.
   static int detectDebugger(bool* running)
   {
     uint32_t prev_ms = SDL_GetTicks();
     do {
       SDL_Delay(1);
       uint32_t ms = SDL_GetTicks();
-      /// 時間間隔が広すぎる場合はステップ実行中 (ブレークポイントで止まった)と判断する。
-      /// また、解除されたと判断した後も1023msecほど状態を維持する。
+      /// If the time interval is too wide, assume step execution is in progress (stopped at a breakpoint).
+      /// Also, maintain the state for about 1023 msec after determining it has been released.
       if (ms - prev_ms > 64) { _in_step_exec = _msec_step_exec; }
       else if (_in_step_exec) { --_in_step_exec; }
       prev_ms = ms;
@@ -246,7 +246,7 @@ namespace lgfx
     _inited = true;
 
     /// Add default keycode mapping
-    /// M5StackのBtnA～BtnCのエミュレート;
+    /// Emulate M5Stack BtnA~BtnC;
     addKeyCodeMapping(SDLK_LEFT, 39);
     addKeyCodeMapping(SDLK_DOWN, 38);
     addKeyCodeMapping(SDLK_RIGHT, 37);
@@ -297,23 +297,23 @@ namespace lgfx
   {
     _msec_step_exec = msec_step_exec;
 
-    /// SDLの準備
+    /// Initialize SDL
     if (0 != Panel_sdl::setup()) { return 1; }
 
-    /// ユーザコード関数の動作・停止フラグ
+    /// Run/stop flag for user code function
     bool running = true;
 
-    /// ユーザコード関数を起動する
+    /// Start the user code function
     auto thread = SDL_CreateThread((SDL_ThreadFunction)fn, "fn", &running);
 
-    /// 全部のウィンドウが閉じられるまでSDLのイベント・描画処理を継続
+    /// Continue SDL event and drawing processing until all windows are closed
     while (0 == Panel_sdl::loop()) {};
 
-    /// ユーザコード関数を終了する
+    /// Terminate the user code function
     running = false;
     SDL_WaitThread(thread, nullptr);
 
-    /// SDLを終了する
+    /// Shut down SDL
     return Panel_sdl::close();
   }
 
@@ -522,10 +522,10 @@ namespace lgfx
     SDL_SetTextureBlendMode(m->texture, SDL_BLENDMODE_NONE);
 
     if (m->frame_image) {
-// 枠画像用のサーフェイスを作成
+// Create a surface for the frame image
       auto sf = SDL_CreateRGBSurfaceFrom((void*)m->frame_image, m->frame_width, m->frame_height, 32, m->frame_width* 4, 0xFF000000, 0xFF0000, 0xFF00, 0xFF);
       if (sf != nullptr) {
-  // 枠画像からテクスチャを作成
+  // Create texture from frame image
         m->texture_frameimage = SDL_CreateTextureFromSurface(m->renderer, sf);
         SDL_FreeSurface(sf);
       }
@@ -574,7 +574,7 @@ namespace lgfx
     angle = (((target * 4) + (angle * 4) + (angle < target ? 8 : 0)) >> 3);
 
     if (monitor.frame_angle != angle)
-    { // 表示する向きを変える
+    { // Change the display orientation
       monitor.frame_angle = angle;
       sdl_invalidate();
     } else if (monitor.frame_rotation & ~3u) {
@@ -587,7 +587,7 @@ namespace lgfx
     {
       SDL_RendererInfo info;
       if (0 == SDL_GetRendererInfo(monitor.renderer, &info)) {
-        // ステップ実行中はVSYNCを待機しない
+        // Do not wait for VSYNC during step execution
         if (((bool)(info.flags & SDL_RENDERER_PRESENTVSYNC)) == step_exec)
         {
           SDL_RenderSetVSync(monitor.renderer, !step_exec);

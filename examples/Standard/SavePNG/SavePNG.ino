@@ -23,11 +23,11 @@ static constexpr char filename[] = "/lovyangfx_test.png";
 
 bool saveToSD(void)
 {
-  // createPng関数で指定範囲の画像からPNG形式のデータを生成します。
-  // SAMD51の場合 172x172程度が上限です。
-  // ESP32の場合 192x192程度が上限です。
-  // メモリ使用状況によってさらに縮みます。
-  // ESP32でPSRAMが有効な場合は大きなサイズでも保存できる可能性があります。
+  // The createPng function generates PNG format data from the image in the specified range.
+  // For SAMD51, the limit is approximately 172x172.
+  // For ESP32, the limit is approximately 192x192.
+  // The limit may be smaller depending on memory usage.
+  // If PSRAM is enabled on ESP32, it may be possible to save larger sizes.
   std::size_t dlen;
   std::uint8_t* png = (std::uint8_t*)lcd.createPng(&dlen, 0, 0, 128, 128);
   if (!png)

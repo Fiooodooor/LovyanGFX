@@ -53,7 +53,7 @@ Porting for RP2040:
 #define put_dump_byte(data, addr, length)
 #endif
 
-// 参考:
+// Reference:
 // https://os.mbed.com/docs/mbed-os/v6.15/mbed-os-api-doxy/group__hal__gpio.html
 // https://github.com/arduino/ArduinoCore-mbed/releases
 // https://github.com/raspberrypi/pico-sdk
@@ -224,8 +224,8 @@ namespace lgfx
       constexpr int n_spi = std::extent<decltype(spi_dev), 0>::value;
 
 #if defined(PICO_RP2350)
-      // RP2350 Dataheetの 9.4. Function Select (Table 642)を参照
-      // ※30以降は2350Bで使用可能
+      // Refer to RP2350 Datasheet 9.4. Function Select (Table 642)
+      // *30 and above are available on RP2350B
       constexpr uint8_t spi0_sclk_pinlist[] = {  2,  6, 18, 22, 34, 38,     UINT8_MAX };
       constexpr uint8_t spi0_miso_pinlist[] = {  0,  4, 16, 20, 32, 36,     UINT8_MAX };
       constexpr uint8_t spi0_mosi_pinlist[] = {  3,  7, 19, 23, 35, 39,     UINT8_MAX };
@@ -233,7 +233,7 @@ namespace lgfx
       constexpr uint8_t spi1_miso_pinlist[] = {  8, 12, 24, 28, 40, 44,     UINT8_MAX };
       constexpr uint8_t spi1_mosi_pinlist[] = { 11, 15, 27,     31, 43, 47, UINT8_MAX };
 #else
-      // RP2040 Dataheetの 1.4.3. GPIO Functions Table 2を参照
+      // Refer to RP2040 Datasheet 1.4.3. GPIO Functions Table 2
       constexpr uint8_t spi0_sclk_pinlist[] = {  2,  6, 18, 22, UINT8_MAX };
       constexpr uint8_t spi0_miso_pinlist[] = {  0,  4, 16, 20, UINT8_MAX };
       constexpr uint8_t spi0_mosi_pinlist[] = {  3,  7, 19, 23, UINT8_MAX };
@@ -324,7 +324,7 @@ namespace lgfx
       {
         lgfx_spi_reset(spi_regs);
         lgfx_spi_unreset(spi_regs);
-        // SPIのクロック周波数を設定
+        // Set SPI clock frequency
         if (!lgfx_spi_set_baudrate(spi_regs, 1000000))
         {
           return false;
@@ -332,7 +332,7 @@ namespace lgfx
         lgfx_spi_set_format(spi_regs, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
         spi_regs->dmacr |= (SPI_SSPDMACR_TXDMAE_BITS | SPI_SSPDMACR_RXDMAE_BITS);
-        // SPI有効化
+        // Enable SPI
         spi_regs->cr1 |= SPI_SSPCR1_SSE_BITS;
         DBGPRINT("cr1 %08x\n", spi_regs->cr1);
         return true;
@@ -381,12 +381,12 @@ namespace lgfx
         {
           return cpp::fail(error_t::invalid_arg);
         }
-        // pin_misoは未使用(-1)でもOKとする
+        // pin_miso can be unused (-1)
         if (pin_miso != -1 && !lgfx::v1::rp2040::pin_check(pin_miso, pinlist.miso_pinlist))
         {
           return cpp::fail(error_t::invalid_arg);
         }
-        // pin_mosiは未使用(-1)でもOKとする
+        // pin_mosi can be unused (-1)
         if (pin_mosi != -1 && !lgfx::v1::rp2040::pin_check(pin_mosi, pinlist.mosi_pinlist))
         {
           return cpp::fail(error_t::invalid_arg);
@@ -494,17 +494,17 @@ namespace lgfx
 
     void clear_rx_fifo(int spi_port)
     {
-      // FIFO内のデータをすべて読みだす
+      // Read all data from the FIFO
       while (is_rx_fifo_not_empty(spi_port))
       {
         static_cast<void>(spi_dev[spi_port]->dr);
       }
     }
 
-    // FIFOを8bitモードにする。
+    // Set FIFO to 8-bit mode.
     void set_dss_8(int spi_port)
     {
-      //spi_dev[spi_port]-> cr0 BIt7 mask This was the correct way to set it to 16bit to 8-bit mode. 16bit to 8Bitモードへの設定方法です
+      //spi_dev[spi_port]-> cr0 BIt7 mask This was the correct way to set it to 16bit to 8-bit mode. This is how to set 16bit to 8bit mode
       //Spi_stk = spi_dev[spi_port]->cr0;
       uint32_t _sspcr0_mask_8bit = spi_dev[spi_port]-> cr0;
       _sspcr0_mask_8bit &= ~0x0000000f;
@@ -525,13 +525,13 @@ namespace lgfx
         DBGPRINT("tx_length %d : length %d\n", tx_length, length);
         while (tx_length && is_tx_fifo_not_full(spi_port))
         {
-          // データを送信（中身は何でもよい訳ではない！ Send data (not just anything goes！）
-          //Touch_XPT2046.cppで設定された制御コードをSPIの送信データに乗せないと、XPT2046は動作しません
+          // Send data (content matters! Send data (not just anything goes!)
+          //The control code set in Touch_XPT2046.cpp must be included in the SPI transmission data, or the XPT2046 will not work
           //If the control code set in Touch_XPT2046.cpp is not included in the SPI transmission data, the XPT2046 will not work.
           spi_dev[spi_port]->dr = *p++; //!!
           --tx_length;
         }
-        // 制御コードが記載された *dst を上書きしないよう比較保護して受信バッファと兼用する
+        // Protect *dst containing the control code from being overwritten by comparison, and share it as a receive buffer
         // *dst, which contains the control code, is protected from being overwritten and is used as a receive buffer.
         while ((length > tx_length) && is_tx_fifo_not_full (spi_port))
         {
@@ -569,9 +569,9 @@ namespace lgfx
         uint32_t ref_count{0};
         int pin_sda{-1};
         int pin_scl{-1};
-        uint32_t timeout_count; // 送受信時のタイムアウト検出用
-        uint8_t last_byte;    // 未送信のデータ
-        bool last_byte_valid{ false }; // 未送信のデータが有効ならfalse
+        uint32_t timeout_count; // Timeout detection for send/receive
+        uint8_t last_byte;    // Unsent data
+        bool last_byte_valid{ false }; // false if unsent data is valid
         restart_state_t restart{ restart_state_t::none };
       };
 
@@ -582,14 +582,14 @@ namespace lgfx
       constexpr int n_i2c = std::extent<decltype(i2c_dev), 0>::value;
 
 #if defined(PICO_RP2350)
-      // RP2350 Dataheetの 9.4. Function Select (Table 642)を参照
-      // ※30以降は2350Bで使用可能
+      // Refer to RP2350 Datasheet 9.4. Function Select (Table 642)
+      // *30 and above are available on RP2350B
       constexpr uint8_t i2c0_sda_pinlist[] = {  0,  4,  8, 12, 16, 20, 24, 28,     32, 36, 40, 44, UINT8_MAX };
       constexpr uint8_t i2c0_sck_pinlist[] = {  1,  5,  9, 13, 17, 21, 25, 29,     33, 37, 41, 45, UINT8_MAX };
       constexpr uint8_t i2c1_sda_pinlist[] = {  2,  6, 10, 14, 18, 22, 26,     30, 34, 38, 42, 46, UINT8_MAX };
       constexpr uint8_t i2c1_sck_pinlist[] = {  3,  7, 11, 15, 19, 23, 27,     31, 35, 39, 43, 47, UINT8_MAX };
 #else
-      // RP2040 Dataheetの 1.4.3. GPIO Functions Table 2を参照
+      // Refer to RP2040 Datasheet 1.4.3. GPIO Functions Table 2
       constexpr uint8_t i2c0_sda_pinlist[] = {  0,  4,  8, 12, 16, 20, 24, 28, UINT8_MAX };
       constexpr uint8_t i2c0_sck_pinlist[] = {  1,  5,  9, 13, 17, 21, 25, 29, UINT8_MAX };
       constexpr uint8_t i2c1_sda_pinlist[] = {  2,  6, 10, 14, 18, 22, 26,     UINT8_MAX };
@@ -1090,7 +1090,7 @@ namespace lgfx
     {
       volatile i2c_hw_t *const i2c_regs = i2c_dev[i2c_port];
       DBG_ENTER();
-      // readで読み出しが行われない可能性があるので、stop conditionに遷移する
+      // A read may not occur, so transition to stop condition
       if (!send_last_byte(i2c_port, stop_state_t::stop , need_wait_t::wait)) {
         return cpp::fail(error_t::connection_lost);
       }
@@ -1120,7 +1120,7 @@ namespace lgfx
     cpp::result<void, error_t> endTransaction(int i2c_port)
     {
       DBG_ENTER();
-      // 未送信の最終データをstop conditionで送信
+      // Send the last unsent data with stop condition
       if (!send_last_byte(i2c_port, stop_state_t::stop, need_wait_t::wait)) {
         return cpp::fail(error_t::connection_lost);
       }

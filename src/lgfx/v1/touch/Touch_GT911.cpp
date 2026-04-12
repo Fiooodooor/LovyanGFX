@@ -177,9 +177,9 @@ namespace lgfx
       uint32_t diff_msec = msec - _last_update;
       _last_update = msec;
 
-      /// GT911は値を0x814Eに0を書くまで同じ値を維持する挙動となっているため、;
-      /// 前回からの間隔が長すぎると古い情報を得てしまうので、
-      /// 一旦データを破棄してしばらくリトライを繰返す
+      /// GT911 retains the same value at 0x814E until 0 is written to it;
+      /// If the interval since the last read is too long, stale data will be obtained,
+      /// so discard the data once and retry for a while
       if (diff_msec >= 128)
       {
         _writeBytes(gt911cmd_getdata, 3);
@@ -224,11 +224,11 @@ namespace lgfx
 
   void Touch_GT911::_freshConfig(void)
   {
-    // 設定レジスタ全体を読取り;
+    // Read all configuration registers;
     uint8_t writedata[188] = { 0x80, 0x47 };
     if (_writeReadBytes(writedata, 2, &writedata[2], 184))
     {
-      // チェックサムを計算し、設定値の更新指示を行う;
+      // Calculate checksum and issue a configuration update command;
       writedata[0xBA] = calcChecksum(&writedata[2], 184); // 0x80FF checksum
       writedata[0xBB] = 0x01;                             // 0x8100 config fresh
       _writeBytes(writedata, 188);

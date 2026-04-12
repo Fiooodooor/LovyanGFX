@@ -13,32 +13,32 @@
 #include <lgfx/v1/panel/Panel_SH8601Z.hpp>
 
 
-/// 独自の設定を行うクラスを、LGFX_Deviceから派生して作成します。
+/// Create a class with custom settings, derived from LGFX_Device.
 class LGFX_Monica : public lgfx::LGFX_Device {
-    // 接続するパネルの型にあったインスタンスを用意します。
+    // Prepare an instance that matches the type of panel to connect.
     lgfx::Panel_SH8601Z     _panel_instance;
-    // パネルを接続するバスの種類にあったインスタンスを用意します。
+    // Prepare an instance that matches the type of bus to connect to the panel.
     lgfx::Bus_SPI           _bus_instance;
 
 public:
-    // コンストラクタを作成し、ここで各種設定を行います。
-    // クラス名を変更した場合はコンストラクタも同じ名前を指定してください。
+    // Create a constructor and configure various settings here.
+    // If you changed the class name, specify the same name for the constructor.
     LGFX_Monica(void)
     {
-        { // バス制御の設定を行います。
-            auto cfg = _bus_instance.config();    // バス設定用の構造体を取得します。
+        { // Configure bus control settings.
+            auto cfg = _bus_instance.config();    // Get the structure for bus configuration.
 
-            // SPIバスの設定
-            cfg.spi_host = SPI3_HOST;     // 使用するSPIを選択  ESP32-S2,C3 : SPI2_HOST or SPI3_HOST / ESP32 : VSPI_HOST or HSPI_HOST
-            // ※ ESP-IDFバージョンアップに伴い、VSPI_HOST , HSPI_HOSTの記述は非推奨になるため、エラーが出る場合は代わりにSPI2_HOST , SPI3_HOSTを使用してください。
-            cfg.spi_mode = 1;             // SPI通信モードを設定 (0 ~ 3)
-            //   cfg.freq_write = 1*1000*1000;    // 送信時のSPIクロック (最大80MHz, 80MHzを整数で割った値に丸められます)
+            // SPI bus settings
+            cfg.spi_host = SPI3_HOST;     // Select SPI to use  ESP32-S2,C3 : SPI2_HOST or SPI3_HOST / ESP32 : VSPI_HOST or HSPI_HOST
+            // Note: With ESP-IDF version updates, VSPI_HOST and HSPI_HOST are deprecated. If you get errors, use SPI2_HOST or SPI3_HOST instead.
+            cfg.spi_mode = 1;             // Set SPI communication mode (0 ~ 3)
+            //   cfg.freq_write = 1*1000*1000;    // SPI clock for transmission (max 80MHz, rounded to a value that divides 80MHz evenly)
             //   cfg.freq_write = 10*1000*1000;
             cfg.freq_write = 40*1000*1000;
-            cfg.freq_read  = 16000000;    // 受信時のSPIクロック
-            cfg.spi_3wire  = true;        // 受信をMOSIピンで行う場合はtrueを設定
-            cfg.use_lock   = true;        // トランザクションロックを使用する場合はtrueを設定
-            cfg.dma_channel = SPI_DMA_CH_AUTO; // 使用するDMAチャンネルを設定 (0=DMA不使用 / 1=1ch / 2=ch / SPI_DMA_CH_AUTO=自動設 定)
+            cfg.freq_read  = 16000000;    // SPI clock for reception
+            cfg.spi_3wire  = true;        // Set to true if reception is done via the MOSI pin
+            cfg.use_lock   = true;        // Set to true to use transaction lock
+            cfg.dma_channel = SPI_DMA_CH_AUTO; // Set DMA channel to use (0=no DMA / 1=1ch / 2=ch / SPI_DMA_CH_AUTO=auto)
 
             cfg.pin_sclk    = 7;
             cfg.pin_io0     = 9;
@@ -47,44 +47,44 @@ public:
             cfg.pin_io3     = 6;
             // cfg.pin_dc      = -1;
 
-            _bus_instance.config(cfg);    // 設定値をバスに反映します。
-            _panel_instance.setBus(&_bus_instance);      // バスをパネルにセットします。
+            _bus_instance.config(cfg);    // Apply the settings to the bus.
+            _panel_instance.setBus(&_bus_instance);      // Set the bus to the panel.
         }
 
-        { // 表示パネル制御の設定を行います。
-            auto cfg = _panel_instance.config();    // 表示パネル設定用の構造体を取得します。
+        { // Configure display panel control settings.
+            auto cfg = _panel_instance.config();    // Get the structure for display panel configuration.
 
-            cfg.pin_cs           =    13;  // CSが接続されているピン番号   (-1 = disable)
-            cfg.pin_rst          =    1;  // RSTが接続されているピン番号  (-1 = disable)
-            cfg.pin_busy         =    -1;  // BUSYが接続されているピン番号 (-1 = disable)
+            cfg.pin_cs           =    13;  // Pin number connected to CS   (-1 = disable)
+            cfg.pin_rst          =    1;  // Pin number connected to RST  (-1 = disable)
+            cfg.pin_busy         =    -1;  // Pin number connected to BUSY (-1 = disable)
 
-            // ※ 以下の設定値はパネル毎に一般的な初期値が設定されていますので、不明な項目はコメントアウトして試してみてください。
+            // Note: The following settings have general default values for each panel, so try commenting out any unknown items.
 
-            cfg.panel_width      =   368;  // 実際に表示可能な幅
-            cfg.panel_height     =   448;  // 実際に表示可能な高さ
+            cfg.panel_width      =   368;  // Actual displayable width
+            cfg.panel_height     =   448;  // Actual displayable height
 
-            // cfg.panel_width      =   320;  // 実際に表示可能な幅
-            // cfg.panel_height     =   240;  // 実際に表示可能な高さ
+            // cfg.panel_width      =   320;  // Actual displayable width
+            // cfg.panel_height     =   240;  // Actual displayable height
 
 
-            cfg.offset_x         =     0;  // パネルのX方向オフセット量
-            cfg.offset_y         =     0;  // パネルのY方向オフセット量
-            cfg.offset_rotation  =     0;  // 回転方向の値のオフセット 0~7 (4~7は上下反転)
-            cfg.dummy_read_pixel =     8;  // ピクセル読出し前のダミーリードのビット数
-            cfg.dummy_read_bits  =     1;  // ピクセル以外のデータ読出し前のダミーリードのビット数
-            cfg.readable         =  true;  // データ読出しが可能な場合 trueに設定
-            cfg.invert           = true;  // パネルの明暗が反転してしまう場合 trueに設定
-            cfg.rgb_order        = true;  // パネルの赤と青が入れ替わってしまう場合 trueに設定
-            cfg.dlen_16bit       = false;  // 16bitパラレルやSPIでデータ長を16bit単位で送信するパネルの場合 trueに設定
-            cfg.bus_shared       =  true;  // SDカードとバスを共有している場合 trueに設定(drawJpgFile等でバス制御を行います)
+            cfg.offset_x         =     0;  // Panel X offset
+            cfg.offset_y         =     0;  // Panel Y offset
+            cfg.offset_rotation  =     0;  // Rotation offset value 0~7 (4~7 are upside down)
+            cfg.dummy_read_pixel =     8;  // Number of dummy read bits before pixel read
+            cfg.dummy_read_bits  =     1;  // Number of dummy read bits before non-pixel data read
+            cfg.readable         =  true;  // Set to true if data reading is supported
+            cfg.invert           = true;  // Set to true if panel brightness is inverted
+            cfg.rgb_order        = true;  // Set to true if panel red and blue are swapped
+            cfg.dlen_16bit       = false;  // Set to true for panels that send data in 16-bit units via 16-bit parallel or SPI
+            cfg.bus_shared       =  true;  // Set to true if sharing the bus with an SD card (performs bus control in drawJpgFile, etc.)
 
-            // 以下はST7735やILI9163のようにピクセル数が可変のドライバで表示がずれる場合にのみ設定してください。
-            cfg.memory_width     =   480;  // ドライバICがサポートしている最大の幅
-            cfg.memory_height    =   480;  // ドライバICがサポートしている最大の高さ
+            // Only set the following for drivers with variable pixel counts like ST7735 or ILI9163 when the display is misaligned.
+            cfg.memory_width     =   480;  // Maximum width supported by the driver IC
+            cfg.memory_height    =   480;  // Maximum height supported by the driver IC
 
             _panel_instance.config(cfg);
         }
-        setPanel(&_panel_instance); // 使用するパネルをセットします。
+        setPanel(&_panel_instance); // Set the panel to use.
     }
 
 
