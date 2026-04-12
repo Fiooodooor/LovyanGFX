@@ -1,4 +1,5 @@
 // Generated JPEG sample data for CVBS example
+#ifdef BUILD_CVBS_EXAMPLES
 #pragma once
 #include <stdint.h>
 #include <esp_log.h>
@@ -2971,3 +2972,4 @@ static const uint8_t jpeg_data[] = {
   0x40, 0xAC, 0x1A, 0xD1, 0xA0, 0x5F, 0xFF, 0xD9
 };
 static const size_t jpeg_data_len = sizeof(jpeg_data);
+#endif

@@ -1,3 +1,5 @@
+#ifdef BUILD_CVBS_EXAMPLES
+
 #define LGFX_USE_V1
 #define WDT_TIMEOUT_SEC 15
 #include <Arduino.h>
@@ -112,3 +114,4 @@ void loop()
 {
     delay(10000);
 }
+#endif

@@ -2398,10 +2398,6 @@ namespace lgfx
   static inline uint8_t* sub_heap_alloc(bool flg_psram, size_t size)
   {
     uint8_t* res = nullptr;
-   ESP_LOGE(TAG, "free heap 8bit=%u, dma=%u, internal=%u\n",
-        heap_caps_get_free_size(MALLOC_CAP_8BIT),
-        heap_caps_get_free_size(MALLOC_CAP_DMA),
-        heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
     if (flg_psram) { res = (uint8_t*)heap_alloc_psram(size); }
     if (res == nullptr)
     {
@@ -2449,7 +2445,7 @@ namespace lgfx
           uint32_t lines_remain = height - y;
           if (lines_remain > linesPerChunk) { lines_remain = linesPerChunk; }
           size_t chunkSize = width * lines_remain;
-   ESP_LOGE(TAG, "y:%d interleave:%d lines:%d chunksize: %d", y, getIndexInterleave(lines_remain), lines_remain, chunkSize);
+  //  ESP_LOGE(TAG, "y:%d interleave:%d lines:%d chunksize: %d", y, getIndexInterleave(lines_remain), lines_remain, chunkSize);
 
           if(y%16==0){
             lineChunk = sub_heap_alloc(use_psram, chunkSize);
@@ -2458,7 +2454,10 @@ namespace lgfx
           if (lineChunk == nullptr)
           {
             ESP_LOGE(TAG, "framebuffer memory alloc fail.");
-
+            ESP_LOGE(TAG, "free heap 8bit=%u, dma=%u, internal=%u\n",
+              heap_caps_get_free_size(MALLOC_CAP_8BIT),
+              heap_caps_get_free_size(MALLOC_CAP_DMA),
+              heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
             deinitFrameBuffer();
             return false;
           }
