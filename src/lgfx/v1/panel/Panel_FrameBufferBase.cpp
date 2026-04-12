@@ -74,7 +74,7 @@ namespace lgfx
   bool Panel_FrameBufferBase::init(bool use_reset)
   {
 #if defined ( LGFX_USE_CACHE_WRITEBACK_ADDR )
-    // キャッシュのライトバックを display メソッドで行うため、auto_displayで自動化する
+    // Since cache write-back is performed in the display method, it is automated using auto_display.
     _auto_display = true;
 #endif
     _range_mod.top = INT16_MAX;
