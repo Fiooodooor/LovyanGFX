@@ -23,6 +23,7 @@ extern const unsigned char parrot09[];
 void setup()
 {
   lcd.init();
+  lcd.initDMA();
   lcd.setRotation(0);
   if (lcd.width() < lcd.height()) { lcd.setRotation(lcd.getRotation() ^ 1); }
 
@@ -43,6 +44,8 @@ void setup()
   sprite[7].createFromBmp(parrot07);
   sprite[8].createFromBmp(parrot08);
   sprite[9].createFromBmp(parrot09);
+
+  lcd.startWrite();
 }
 
 void loop() {
