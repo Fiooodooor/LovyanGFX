@@ -2403,6 +2403,10 @@ namespace lgfx
     {
       res = (uint8_t*)heap_alloc_dma(size);
     }
+    if (res == nullptr)
+    {
+      res = (uint8_t*)heap_alloc(size);
+    }
     if (res) { memset(res, 0, size); }
     return (uint8_t*)res;
   }
@@ -2411,6 +2415,9 @@ namespace lgfx
   {
 // printf("initFrameBuffer w:%d h:%d \n", width, height);
     uint8_t** lineArray = (uint8_t**)heap_alloc_dma(height * sizeof(uint8_t*));
+    if (lineArray == nullptr) {
+      lineArray = (uint8_t**)heap_alloc(height * sizeof(uint8_t*));
+    }
 
     size_t alloc_idx_len = (height / linesPerChunk + 2) * sizeof(uint16_t);
     uint16_t* allocated_list = (uint16_t*)sub_heap_alloc(use_psram, alloc_idx_len);
@@ -2431,20 +2438,26 @@ namespace lgfx
 
     if (use_psram != 1)
     {
+      uint8_t* lineChunk = nullptr;
       for (int y = 0; y < height; y += linesPerChunk)
       {
         {
           uint32_t lines_remain = height - y;
           if (lines_remain > linesPerChunk) { lines_remain = linesPerChunk; }
           size_t chunkSize = width * lines_remain;
-  //  ESP_LOGE(TAG, "y:%d i:%d interleave:%d lines:%d chunksize: %d", y, i, getIndexInterleave(idx), lines_remain, chunkSize);
+  //  ESP_LOGE(TAG, "y:%d interleave:%d lines:%d chunksize: %d", y, getIndexInterleave(lines_remain), lines_remain, chunkSize);
 
-          uint8_t* lineChunk = sub_heap_alloc(use_psram, chunkSize);
+          if(y%16==0){
+            lineChunk = sub_heap_alloc(use_psram, chunkSize);
+          }
 // printf ("line %08x alloc \n", lineChunk);
           if (lineChunk == nullptr)
           {
             ESP_LOGE(TAG, "framebuffer memory alloc fail.");
-
+            ESP_LOGE(TAG, "free heap 8bit=%u, dma=%u, internal=%u\n",
+              heap_caps_get_free_size(MALLOC_CAP_8BIT),
+              heap_caps_get_free_size(MALLOC_CAP_DMA),
+              heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
             deinitFrameBuffer();
             return false;
           }
@@ -2453,7 +2466,9 @@ namespace lgfx
           do
           {
             lineArray[y + j] = lineChunk;
-            lineChunk += width;
+            if(j%2==1){
+              lineChunk += width;
+            }
           } while (++j < lines_remain);
         }
       }
